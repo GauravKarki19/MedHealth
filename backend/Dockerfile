@@ -1,10 +1,18 @@
-FROM python:3.10-slim-bullseye
+FROM node:18-alpine
 
-WORKDIR /python-docker
-COPY requirements.txt requirements.txt
-RUN pip3 install -r requirements.txt
+WORKDIR /app
 
+# Copy package files
+COPY package*.json ./
+
+# Install dependencies
+RUN npm ci --only=production
+
+# Copy application code
 COPY . .
+
+# Expose port
 EXPOSE 5000
 
-CMD ["flask","run", "--host","0.0.0.0"]
+# Start server
+CMD ["node", "server.js"]

@@ -5,6 +5,7 @@ import LandingPage from "../pages/LandingPage";
 import AboutUs from "../pages/AboutUs"
 import Home from "../pages/Home";
 import Doctors from "../pages/Doctors";
+import DoctorSearch from "../pages/DoctorSearch";
 import BuyMedicines from "../pages/Medicines";
 import MedicineDetails from "../pages/MedicineDetails";
 import Cart from "../pages/Cart";
@@ -25,6 +26,7 @@ import ResetPassword from "../components/resetPassword/ResetPassword";
 import PrivacyPolicy from "../pages/Privacy";
 import DeleteAccount from "../pages/DeleteAccount";
 import HealthBlogs from "../pages/HealthBlogs";
+import DoctorAnalytics from "../components/analytics/DoctorAnalytics";
 
 const RouterRoutes = () => {
   useScrollRestore();
@@ -35,7 +37,9 @@ const RouterRoutes = () => {
         <Route path="/" element={<LandingPage />} />
         <Route path="/home" element={<Home />} />
         <Route path="/doctors" element={<Doctors />} />
+        <Route path="/doctor-search" element={<DoctorSearch />} />
         <Route path="/buy-medicines" element={<BuyMedicines />} />
+        <Route path="/analytics" element={<DoctorAnalytics />} />
         <Route path="/all-medicines" element={<AllMedicines />} />
         <Route
           path="/all-medicines/medicine-details/:productId"

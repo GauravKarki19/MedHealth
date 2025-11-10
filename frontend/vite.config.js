@@ -1,5 +1,5 @@
 import { defineConfig } from 'vite';
-import reactRefresh from '@vitejs/plugin-react-refresh';
+import react from '@vitejs/plugin-react';
 import svgrPlugin from 'vite-plugin-svgr';
 
 export default defineConfig({
@@ -7,7 +7,7 @@ export default defineConfig({
     outDir: 'build', 
   },
   plugins: [
-    reactRefresh(),
+    react(),
     svgrPlugin({
       svgrOptions: {
         icon: true,
@@ -16,5 +16,20 @@ export default defineConfig({
   ],
   server: {
     port: 3000, // Optional; doesn't affect production
+  },
+  optimizeDeps: {
+    include: ['framer-motion', '@popperjs/core'],
+    exclude: [],
+  },
+  resolve: {
+    alias: {},
+  },
+  css: {
+    preprocessorOptions: {
+      scss: {
+        // Suppress deprecation warnings
+        silenceDeprecations: ['legacy-js-api', 'import'],
+      },
+    },
   },
 });

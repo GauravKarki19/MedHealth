@@ -52,37 +52,60 @@ bcrypt = Bcrypt(app)
 # Twilio Whatsapp notification variables
 URI = os.getenv("DBURL")
 
-# Twilio Whatsapp notification variables
+# Twilio Whatsapp notification variables (optional)
 twilioWhatsappAccountSid = os.getenv("TWILIO_WHATSAPP_ACCOUNT_SID")
 twilioWhatsappAuthToken = os.getenv("TWILIO_WHATSAPP_AUTH_TOKEN")
 twilioWhatsappFrom = os.getenv("TWILIO_WHATSAPP_FROM")
-whatsappclient = Client(twilioWhatsappAccountSid, twilioWhatsappAuthToken)
+if twilioWhatsappAccountSid and twilioWhatsappAuthToken:
+    whatsappclient = Client(twilioWhatsappAccountSid, twilioWhatsappAuthToken)
+else:
+    whatsappclient = None
+    print("Twilio WhatsApp configuration not found - WhatsApp features will be disabled")
 
-firebase_config = {
-    "type": os.getenv("FIREBASE_TYPE"),
-    "project_id": os.getenv("FIREBASE_PROJECT_ID"),
-    "private_key_id": os.getenv("FIREBASE_PRIVATE_KEY_ID"),
-    "private_key": os.getenv("FIREBASE_PRIVATE_KEY").replace('\\n', '\n'),  
-    "client_email": os.getenv("FIREBASE_CLIENT_EMAIL"),
-    "client_id": os.getenv("FIREBASE_CLIENT_ID"),
-    "auth_uri": os.getenv("FIREBASE_AUTH_URI"),
-    "token_uri": os.getenv("FIREBASE_TOKEN_URI"),
-    "auth_provider_x509_cert_url": os.getenv("FIREBASE_AUTH_PROVIDER_CERT_URL"),
-    "client_x509_cert_url": os.getenv("FIREBASE_CLIENT_CERT_URL"),
-    "universe_domain": os.getenv("FIREBASE_UNIVERSE_DOMAIN"),
-}
+# Firebase configuration (optional - only initialize if all required vars are present)
+firebase_private_key = os.getenv("FIREBASE_PRIVATE_KEY")
+if firebase_private_key:
+    firebase_config = {
+        "type": os.getenv("FIREBASE_TYPE"),
+        "project_id": os.getenv("FIREBASE_PROJECT_ID"),
+        "private_key_id": os.getenv("FIREBASE_PRIVATE_KEY_ID"),
+        "private_key": firebase_private_key.replace('\\n', '\n'),  
+        "client_email": os.getenv("FIREBASE_CLIENT_EMAIL"),
+        "client_id": os.getenv("FIREBASE_CLIENT_ID"),
+        "auth_uri": os.getenv("FIREBASE_AUTH_URI"),
+        "token_uri": os.getenv("FIREBASE_TOKEN_URI"),
+        "auth_provider_x509_cert_url": os.getenv("FIREBASE_AUTH_PROVIDER_CERT_URL"),
+        "client_x509_cert_url": os.getenv("FIREBASE_CLIENT_CERT_URL"),
+        "universe_domain": os.getenv("FIREBASE_UNIVERSE_DOMAIN"),
+    }
 
-if firebase_config:
     try:
         cred = credentials.Certificate(firebase_config)
         firebase_admin.initialize_app(cred)
         print("Firebase initialized successfully!")
     except json.JSONDecodeError as e:
         print(f"JSON Decode Error: {e}")
+    except Exception as e:
+        print(f"Firebase initialization error: {e}")
 else:
-    print("Error: Firebase credentials not found in environment variables.")
+    print("Firebase configuration not found - Firebase features will be disabled")
 
-client = pymongo.MongoClient(URI, server_api=ServerApi('1'))
+# MongoDB connection (required)
+if not URI:
+    print("ERROR: DBURL environment variable is not set. Please set it in your .env file.")
+    print("Example: DBURL=mongodb://username:password@host:port/database")
+    print("Or for MongoDB Atlas: DBURL=mongodb+srv://username:password@cluster.mongodb.net/database")
+    raise ValueError("DBURL environment variable is required")
+
+try:
+    client = pymongo.MongoClient(URI, server_api=ServerApi('1'))
+    # Test the connection
+    client.admin.command('ping')
+    print("MongoDB connected successfully!")
+except Exception as e:
+    print(f"MongoDB connection error: {e}")
+    print("Please check your DBURL in the .env file")
+    raise
 
 doctors = client.get_database("telmedsphere").doctors
 patients = client.get_database("telmedsphere").patients
@@ -472,7 +495,23 @@ def get_status():
     for i in doctors.find():
         if i.get('verified', False):
             count += 1
-            details.append({"email": i["email"], "status": i.get("status", "offline"), "username": i["username"], "specialization": i["specialization"], "gender": i["gender"], "phone": i["phone"], "isInMeet": i["meet"], "noOfAppointments": i["appointments"], "noOfStars": i["stars"], "id": count, 'fee': i.get('fee', 199)})
+            doctor_data = {
+                "email": i.get("email", ""),
+                "status": i.get("status", "offline"),
+                "username": i.get("username", "Unknown Doctor"),
+                "specialization": i.get("specialization", "General Medicine"),
+                "gender": i.get("gender", "male"),
+                "phone": i.get("phone", ""),
+                "isInMeet": i.get("meet", False),
+                "noOfAppointments": i.get("appointments", 0),
+                "noOfStars": i.get("stars", 0),
+                "id": count,
+                "fee": i.get('fee', 199),
+                "profilePicture": i.get("profile_picture", ""),
+                # Include location if available
+                "location": i.get("location", None)
+            }
+            details.append(doctor_data)
     return jsonify({"details": details}), 200
 
 def send_message_async(msg):
@@ -1296,3 +1335,157 @@ def contact():
     
 #     response = model.generate_content(prompt)
 #     return jsonify({"summary": response.text})
+
+# Disease Prediction Endpoint
+@app.route('/predict', methods=['POST'])
+def predict():
+    try:
+        import numpy as np
+        import pandas as pd
+        import pickle
+        import os
+        from pathlib import Path
+        
+        # Get the base directory
+        # For Render deployment, models should be in the repository root
+        # For local development, models are in ../models
+        current_file = Path(__file__).resolve()
+        if (current_file.parent.parent / 'models').exists():
+            # Local development: models are in ../models
+            models_dir = current_file.parent.parent / 'models'
+        else:
+            # Production: models should be in backend/models or repo root
+            # Try multiple possible locations
+            possible_paths = [
+                current_file.parent / 'models',  # backend/models
+                current_file.parent.parent / 'models',  # root/models
+                Path('/app/models'),  # Docker/Render absolute path
+            ]
+            models_dir = None
+            for path in possible_paths:
+                if path.exists() and (path / 'ExtraTrees').exists():
+                    models_dir = path
+                    break
+            
+            if not models_dir:
+                # Return error if models not found
+                return jsonify({
+                    'error': 'Disease prediction model not found',
+                    'message': 'Model files are required for disease prediction. Please ensure models directory is in the repository.',
+                    'searched_paths': [str(p) for p in possible_paths]
+                }), 503
+        
+        # Check if model files exist
+        model_file = models_dir / 'ExtraTrees'
+        desc_file = models_dir / 'symptom_Description.csv'
+        prec_file = models_dir / 'symptom_precaution.csv'
+        
+        if not model_file.exists():
+            return jsonify({
+                'error': 'Disease prediction model not found. Please ensure the model files are available.',
+                'message': 'The prediction service is currently unavailable. Please contact support.'
+            }), 503
+        
+        # Load model and data files
+        try:
+            model = pickle.load(open(model_file, 'rb'))
+            desc = pd.read_csv(desc_file)
+            prec = pd.read_csv(prec_file)
+        except Exception as e:
+            return jsonify({
+                'error': f'Failed to load prediction model: {str(e)}',
+                'message': 'The prediction service is currently unavailable. Please contact support.'
+            }), 503
+        
+        # Disease and symptom lists
+        diseases = ['(vertigo) Paroymsal Positional Vertigo', 'AIDS', 'Acne', 'Alcoholic hepatitis', 'Allergy', 'Arthritis', 'Bronchial Asthma', 'Cervical spondylosis', 'Chicken pox', 'Chronic cholestasis', 'Common Cold', 'Dengue', 'Diabetes', 'Dimorphic hemmorhoids(piles)', 'Drug Reaction', 'Fungal infection', 'GERD', 'Gastroenteritis', 'Heart attack', 'Hepatitis B', 'Hepatitis C', 'Hepatitis D', 'Hepatitis E', 'Hypertension', 'Hyperthyroidism', 'Hypoglycemia', 'Hypothyroidism', 'Impetigo', 'Jaundice', 'Malaria', 'Migraine', 'Osteoarthristis', 'Paralysis (brain hemorrhage)', 'Peptic ulcer diseae', 'Pneumonia', 'Psoriasis', 'Tuberculosis', 'Typhoid', 'Urinary tract infection', 'Varicose veins', 'hepatitis A']
+        
+        symptoms = ['Disease', 'itching', 'skin_rash', 'nodal_skin_eruptions', 'continuous_sneezing', 'shivering', 'chills', 'joint_pain', 'stomach_pain', 'acidity', 'ulcers_on_tongue', 'muscle_wasting', 'vomiting', 'burning_micturition', 'fatigue', 'weight_gain', 'anxiety', 'cold_hands_and_feets', 'mood_swings', 'weight_loss', 'restlessness', 'lethargy', 'patches_in_throat', 'irregular_sugar_level', 'cough', 'high_fever', 'sunken_eyes', 'breathlessness', 'sweating', 'dehydration', 'indigestion', 'headache', 'yellowish_skin', 'dark_urine', 'nausea', 'loss_of_appetite', 'pain_behind_the_eyes', 'back_pain', 'constipation', 'abdominal_pain', 'diarrhoea', 'mild_fever', 'yellow_urine', 'yellowing_of_eyes', 'acute_liver_failure', 'fluid_overload', 'swelling_of_stomach', 'swelled_lymph_nodes', 'malaise', 'blurred_and_distorted_vision', 'phlegm', 'throat_irritation', 'redness_of_eyes', 'sinus_pressure', 'runny_nose', 'congestion', 'chest_pain', 'weakness_in_limbs', 'fast_heart_rate', 'pain_during_bowel_movements', 'pain_in_anal_region', 'bloody_stool', 'irritation_in_anus', 'neck_pain', 'dizziness', 'cramps', 'bruising', 'obesity', 'swollen_legs', 'swollen_blood_vessels', 'puffy_face_and_eyes', 'enlarged_thyroid', 'brittle_nails', 'swollen_extremeties', 'excessive_hunger', 'extra_marital_contacts', 'drying_and_tingling_lips', 'slurred_speech', 'knee_pain', 'hip_joint_pain', 'muscle_weakness', 'stiff_neck', 'swelling_joints', 'movement_stiffness', 'spinning_movements', 'loss_of_balance', 'unsteadiness', 'weakness_of_one_body_side', 'loss_of_smell', 'bladder_discomfort', 'continuous_feel_of_urine', 'passage_of_gases', 'internal_itching', 'toxic_look_(typhos)', 'depression', 'irritability', 'muscle_pain', 'altered_sensorium', 'red_spots_over_body', 'belly_pain', 'abnormal_menstruation', 'watering_from_eyes', 'increased_appetite', 'polyuria', 'family_history', 'mucoid_sputum', 'rusty_sputum', 'lack_of_concentration', 'visual_disturbances', 'receiving_blood_transfusion', 'receiving_unsterile_injections', 'coma', 'stomach_bleeding', 'distention_of_abdomen', 'history_of_alcohol_consumption', 'blood_in_sputum', 'prominent_veins_on_calf', 'palpitations', 'painful_walking', 'pus_filled_pimples', 'blackheads', 'scurring', 'skin_peeling', 'silver_like_dusting', 'small_dents_in_nails', 'inflammatory_nails', 'blister', 'red_sore_around_nose', 'yellow_crust_ooze', 'prognosis', 'skin rash', 'mood swings', 'weight loss', 'fast heart rate', 'excessive hunger', 'muscle weakness', 'abnormal menstruation', 'muscle wasting', 'patches in throat', 'high fever', 'extra marital contacts', 'yellowish skin', 'loss of appetite', 'abdominal pain', 'yellowing of eyes', 'chest pain', 'loss of balance', 'lack of concentration', 'blurred and distorted vision', 'drying and tingling lips', 'slurred speech', 'stiff neck', 'swelling joints', 'painful walking', 'dark urine', 'yellow urine', 'receiving blood transfusion', 'receiving unsterile injections', 'visual disturbances', 'burning micturition', 'bladder discomfort', 'foul smell of urine', 'continuous feel of urine', 'irregular sugar level', 'increased appetite', 'joint pain', 'skin peeling', 'small dents in nails', 'inflammatory nails', 'swelling of stomach', 'distention of abdomen', 'history of alcohol consumption', 'fluid overload', 'pain during bowel movements', 'pain in anal region', 'bloody stool', 'irritation in anus', 'acute liver failure', 'stomach bleeding', 'back pain', 'weakness in limbs', 'neck pain', 'mucoid sputum', 'mild fever', 'muscle pain', 'family history', 'continuous sneezing', 'watering from eyes', 'rusty sputum', 'weight gain', 'puffy face and eyes', 'enlarged thyroid', 'brittle nails', 'swollen extremeties', 'swollen legs', 'prominent veins on calf', 'stomach pain', 'spinning movements', 'sunken eyes', 'silver like dusting', 'swelled lymph nodes', 'blood in sputum', 'swollen blood vessels', 'toxic look (typhos)', 'belly pain', 'throat irritation', 'redness of eyes', 'sinus pressure', 'runny nose', 'loss of smell', 'passage of gases', 'cold hands and feets', 'weakness of one body side', 'altered sensorium', 'nodal skin eruptions', 'red sore around nose', 'yellow crust ooze', 'ulcers on tongue', 'spotting  urination', 'pain behind the eyes', 'red spots over body', 'internal itching']
+        
+        data = request.get_json(force=True)
+        
+        if not data:
+            return jsonify({'error': 'No symptoms provided'}), 400
+        
+        if len(data) < 2:
+            return jsonify({'error': 'At least 2 symptoms are required for accurate prediction'}), 400
+        
+        # Count matched symptoms
+        matched_symptoms = 0
+        features = [0] * len(symptoms)
+        
+        for symptom in data:
+            # Normalize symptom name (handle both formats)
+            symptom_normalized = symptom.replace(' ', '_').lower()
+            symptom_original = symptom
+            
+            # Try both normalized and original formats
+            if symptom_normalized in symptoms:
+                index = symptoms.index(symptom_normalized)
+                features[index] = 1
+                matched_symptoms += 1
+            elif symptom_original in symptoms:
+                index = symptoms.index(symptom_original)
+                features[index] = 1
+                matched_symptoms += 1
+            else:
+                print(f"Symptom not found: {symptom}")
+        
+        if matched_symptoms < 2:
+            return jsonify({'error': 'Not enough recognized symptoms. Please provide more symptoms.'}), 400
+        
+        # Model prediction
+        try:
+            proba = model.predict_proba([features])
+            max_probability = max(proba[0])
+            
+            if max_probability < 0.1:
+                return jsonify({'error': 'The symptom combination does not match known disease patterns. Please provide more specific symptoms.'}), 400
+        except Exception as e:
+            print(f"Model Prediction Error: {str(e)}")
+            return jsonify({'error': str(e), 'message': 'Prediction failed.'}), 500
+        
+        # Process results
+        top5_idx = np.argsort(proba[0])[-5:][::-1]
+        top5_proba = np.sort(proba[0])[-5:][::-1]
+        top5_diseases = [diseases[i] for i in top5_idx]
+        
+        response = []
+        for i in range(min(3, len(top5_diseases))):
+            disease = top5_diseases[i]
+            probability = top5_proba[i]
+            
+            # Get description
+            disease_desc = "No description available"
+            if disease in desc["Disease"].values:
+                disease_desc = desc[desc['Disease'] == disease].iloc[0][1]
+            
+            # Get precautions
+            precautions = []
+            if disease in prec["Disease"].values:
+                c = prec[prec['Disease'] == disease].index[0]
+                for j in range(1, len(prec.iloc[c])):
+                    prec_val = prec.iloc[c, j]
+                    if pd.notna(prec_val) and prec_val:
+                        precautions.append(str(prec_val))
+            
+            response.append({
+                'disease': disease,
+                'probability': float(probability),
+                'description': disease_desc,
+                'precautions': precautions
+            })
+        
+        return jsonify(response)
+        
+    except ImportError as e:
+        return jsonify({
+            'error': f'Required libraries not available: {str(e)}',
+            'message': 'Disease prediction requires additional libraries. Please install numpy, pandas, and scikit-learn.'
+        }), 503
+    except Exception as e:
+        print(f"Prediction error: {str(e)}")
+        return jsonify({
+            'error': str(e),
+            'message': 'An error occurred while predicting disease. Please try again later.'
+        }), 500

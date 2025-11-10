@@ -1,0 +1,58 @@
+# Render Blueprint for MedHealth Backend
+# This file defines the infrastructure as code for Render deployment
+
+services:
+  - type: web
+    name: medhealth-backend
+    env: python
+    region: oregon  # Change to your preferred region
+    plan: free  # Change to 'starter' or 'standard' for production
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT
+    healthCheckPath: /
+    envVars:
+      - key: DBURL
+        sync: false  # Set this manually in Render dashboard
+      - key: SECRET
+        generateValue: true  # Render will generate a random secret
+      - key: DOMAIN
+        sync: false  # Set this after deployment
+      - key: HOST_EMAIL
+        sync: false
+      - key: PASSWORD
+        sync: false
+      - key: PORT
+        value: 587
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: FIREBASE_TYPE
+        sync: false
+      - key: FIREBASE_PROJECT_ID
+        sync: false
+      - key: FIREBASE_PRIVATE_KEY_ID
+        sync: false
+      - key: FIREBASE_PRIVATE_KEY
+        sync: false
+      - key: FIREBASE_CLIENT_EMAIL
+        sync: false
+      - key: FIREBASE_CLIENT_ID
+        sync: false
+      - key: FIREBASE_AUTH_URI
+        value: https://accounts.google.com/o/oauth2/auth
+      - key: FIREBASE_TOKEN_URI
+        value: https://oauth2.googleapis.com/token
+      - key: FIREBASE_AUTH_PROVIDER_CERT_URL
+        value: https://www.googleapis.com/oauth2/v1/certs
+      - key: FIREBASE_CLIENT_CERT_URL
+        sync: false
+      - key: FIREBASE_UNIVERSE_DOMAIN
+        value: googleapis.com
+      - key: TWILIO_WHATSAPP_ACCOUNT_SID
+        sync: false
+      - key: TWILIO_WHATSAPP_AUTH_TOKEN
+        sync: false
+      - key: TWILIO_WHATSAPP_FROM
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+

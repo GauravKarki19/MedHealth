@@ -1,6 +1,7 @@
 import React, { Component, useContext, useEffect } from "react";
+import { motion } from "framer-motion";
+import { CheckCircle2, User, Search, FileText, ChevronLeft, ChevronRight } from "lucide-react";
 import Home from "../components/diseasePrediction/Home";
-// import Patient from "../components/diseasePrediction/Patient1";
 import Patient2 from "../components/diseasePrediction/Patient2";
 import Symptom from "../components/diseasePrediction/Symptom";
 import Disease from "../components/diseasePrediction/Disease";
@@ -13,37 +14,27 @@ class DP extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      current_page: "Home", // Name of the current component
+      current_page: "Home",
       tab_name: "Welcome",
       tab_progress: 25,
-      button_is_disabled: false, // Next button disabled if not agreed to terms
-      home_button_checked: false, //Check if terms are agreed
-      age: localStorage.getItem("age") ? localStorage.getItem("age") : "18", //Patient Default Age
-      button_name: "Next", //Button name retry or next
+      button_is_disabled: false,
+      home_button_checked: false,
+      age: localStorage.getItem("age") ? localStorage.getItem("age") : "18",
+      button_name: "Next",
       gender: localStorage.getItem("gender")
         ? localStorage.getItem("gender").toUpperCase()
-        : "Male", //Default gender
-      home_nav_icon: <p>1</p>,
-      patient_nav_icon: <p>2</p>,
-      symptom_nav_icon: <p>3</p>,
-      disease_nav_icon: <p>4</p>,
+        : "Male",
       patient_question: localStorage.getItem("patient_question")
         ? localStorage.getItem("patient_question")
         : [],
-      home_nav_value: false,
-      patient_nav_value: false,
-      symptom_nav_value: false,
-      disease_nav_value: false,
       disease_possibility: [],
       user_symptoms: [],
       user_symptom_length: 0,
     };
-    // this.symptomPage = React.createRef();
     this.symptomRef = React.createRef();
   }
 
   get_next_page = (e) => {
-    // eslint-disable-next-line default-case
     switch (this.state.current_page) {
       case "Home":
         return this.setState({
@@ -53,14 +44,7 @@ class DP extends Component {
           button_is_disabled: true,
           home_button_checked: true,
           button_name: "Next",
-          // patient_2_next_button_disabled: true,
         });
-      // case "Patient":
-      //   return this.setState({
-      //     current_page: "Patient-2",
-      //     button_name: "Next",
-      //     patient_2_next_button_disabled: true,
-      //   });
       case "Patient-2":
         return this.setState({
           current_page: "Symptom",
@@ -68,14 +52,13 @@ class DP extends Component {
           button_name: "Finish",
           patient_nav_value: true,
           button_is_disabled: true,
-          user_symptom_length: 0,
           home_button_checked: true,
+          user_symptom_length: 0,
           patient_question: localStorage.getItem("patient_question")
-            ? JSON.parse(localStorage.getItem("patient_question")) // Convert back to array
+            ? JSON.parse(localStorage.getItem("patient_question"))
             : [],
         });
       case "Symptom":
-        // Call the Symptom component's sendSymptomsToBackend method
         if (this.symptomRef.current) {
           this.symptomRef.current.sendSymptomsToBackend();
         }
@@ -94,57 +77,18 @@ class DP extends Component {
       case "Disease":
         return this.setState({
           tab_progress: 25,
-          current_page: "Home", // Name of the current component
-          button_is_disabled: false, // Next button disabled if not agreed to terms
-          home_button_checked: false, //Check if terms are agreed
-          age: "18", //Patient Default Age
-          button_name: "Next", //Button name retry or next
-          gender: "Male", //Default gender
-          male: true, // patient checkbox
-          female: false, // patient checkbox
-          home_nav_icon: <p>1</p>,
-          patient_nav_icon: <p>2</p>,
-          symptom_nav_icon: <p>3</p>,
-          disease_nav_icon: <p>4</p>,
-          home_nav_value: false,
-          patient_nav_value: false,
-          symptom_nav_value: false,
-          disease_nav_value: false,
+          current_page: "Home",
+          button_is_disabled: false,
+          home_button_checked: false,
+          age: "18",
+          button_name: "Next",
+          gender: "Male",
           disease_possibility: [],
           user_symptoms: [],
           user_symptom_length: "",
         });
     }
   };
-
-  get_gender = (e) => {
-    if (e.target.value === "male") {
-      this.setState({
-        male: true,
-        female: false,
-        gender: "Male",
-      });
-    } else if (e.target.value === "female") {
-      this.setState({
-        male: false,
-        female: true,
-        gender: "Female",
-      });
-    }
-  };
-
-  get_age_event = (e) => {
-    this.setState({ age: e.target.value });
-  };
-
-  // symptomInfoCallback = (data, data2) => {
-  //   this.setState((prevState) => ({
-  //     disease_possibility: data,
-  //     user_symptoms:
-  //       prevState.user_symptoms.length > 0 ? prevState.user_symptoms : data2,
-  //     user_symptom_length: data2.length,
-  //   }));
-  // };
 
   patient_2_callback = async (data) => {
     let d = data.filter((key) => {
@@ -162,7 +106,6 @@ class DP extends Component {
   updateSymptoms = (user_symptoms) => {
     this.setState({ user_symptoms });
     this.setState({ user_symptom_length: user_symptoms.length });
-    // Enable button only if there are at least 2 symptoms for more accurate prediction
     if (user_symptoms.length >= 2) {
       this.setState({ button_is_disabled: false });
     } else {
@@ -195,10 +138,7 @@ class DP extends Component {
     }
   };
 
-  handleResetClick = () => {};
-
   get_previous_page = (e) => {
-    // eslint-disable-next-line default-case
     switch (this.state.current_page) {
       case "Disease":
         return this.setState({
@@ -215,7 +155,6 @@ class DP extends Component {
       case "Symptom":
         return this.setState({
           current_page: "Patient-2",
-          symptom_page_button: "",
           tab_progress: 50,
           button_name: "Next",
           button_is_disabled: true,
@@ -229,7 +168,6 @@ class DP extends Component {
         return this.setState({
           current_page: "Home",
           button_name: "Next",
-          home_nav_icon: <p>1</p>,
           home_nav_value: false,
           button_is_disabled: false,
           home_button_checked: false,
@@ -237,23 +175,12 @@ class DP extends Component {
           user_symptom_length: 0,
           tab_progress: 25,
         });
-      // case "Patient":
-      //   return this.setState({
-      //     current_page: "Home",
-      //     home_nav_icon: <p>1</p>,
-      //     home_nav_value: false,
-      //     button_is_disabled: true,
-      //     home_button_checked: false,
-      //     tab_progress: 25,
-      //     user_symptom_length: 1,
-      //   });
     }
   };
 
   showPage = (e) => {
     const { current_page, home_button_checked, age, gender, result } =
       this.state;
-    // eslint-disable-next-line default-case
     switch (current_page) {
       case "Home":
         return (
@@ -262,11 +189,8 @@ class DP extends Component {
             checked={this.home_button_check_event}
           />
         );
-      // case "Patient":
-      //   return <Patient male={male} female={female} gender={this.get_gender} age={age} ageChange={this.get_age_event} />;
       case "Patient-2":
         return <Patient2 callback={this.patient_2_callback} />;
-
       case "Symptom":
         return (
           <Symptom
@@ -291,184 +215,176 @@ class DP extends Component {
           />
         ) : (
           <div className="text-center p-4">
-            <p
-              ref={(el) => {
-                if (el) {
-                  setTimeout(() => {
-                    if (el && this.state.disease_possibility.length === 0) {
-                      el.innerHTML = 
-                      `<div class="text-red-500 mb-4">
-                         <h3>Error predicting disease</h3>
-                         <p>We encountered an issue processing your symptoms.</p>
-                       </div>
-                       <div>
-                         <p>This could be due to:</p>
-                         <ul class="list-disc text-left ml-8 mt-2">
-                           <li>Not enough symptoms selected</li>
-                           <li>Connection issues with our prediction service</li>
-                           <li>The symptoms combination doesn't match known patterns</li>
-                         </ul>
-                         <p class="mt-4">Please go back and try again with different symptoms.</p>
-                       </div>`;
-                    }
-                  }, 5000); // Reduced timeout to 5 seconds
-                }
-              }}
-              className="text-blue-7 dark:text-white-1"
-            >
-              <div className="flex justify-center items-center flex-col">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-9 mb-4"></div>
-                Loading disease possibility...
-              </div>
-            </p>
+            <div className="flex justify-center items-center flex-col">
+              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600 mb-4"></div>
+              <p className="text-gray-600 dark:text-gray-400">Loading disease possibility...</p>
+            </div>
           </div>
         );
     }
-  };
-
-  renderResetButton = () => {
-    return (
-      <button
-        className="usa-button usa-button--secondary"
-        onClick={this.symptomPage.current}
-      >
-        Reset
-      </button>
-    );
   };
 
   render() {
     const {
       tab_progress,
       button_is_disabled,
-      user_symptom_length,
       current_page,
       home_button_checked,
       button_name,
     } = this.state;
 
+    const steps = [
+      { id: 1, name: "Welcome", page: "Home", progress: 25, icon: CheckCircle2 },
+      { id: 2, name: "Patient Info", page: "Patient-2", progress: 50, icon: User },
+      { id: 3, name: "Symptoms", page: "Symptom", progress: 75, icon: Search },
+      { id: 4, name: "Results", page: "Disease", progress: 100, icon: FileText },
+    ];
+
+    const isDarkMode = document.documentElement.classList.contains('dark');
+
     return (
       <div
         id="disease-prediction"
-        className="py-28 flex justify-center items-center dark:bg-black-6"
+        className={`min-h-screen py-12 px-4 sm:px-6 lg:px-8 transition-colors duration-300 ${
+          isDarkMode ? 'bg-gray-900' : 'bg-gradient-to-br from-gray-50 to-blue-50/30'
+        }`}
       >
-        {/* main-content */}
-        <main className="px-8 pt-12 max-w-[1000px] w-[95vw] border-[1px] border-grey-3 rounded-[1rem] max-sm:p-6 max-sm:pb-0 dark:border-white-1 dark:border-opacity-25 dark:bg-black-0 shadow-[0_0_5px_1px_#E4F6FF]">
-          {/* first-grid  */}
-          <div className="grid grid-cols-12 max-md:grid-cols-none ">
-            <div className="col-span-3 relative max-md:col-span-full">
-              {/* side-menu-list */}
-              <ul className="list-none leading-6 md:pl-2 absolute w-full">
-                <li
-                  id=""
-                  className="py-[3px] px-[3px] text-[1rem] rounded-[13px] w-[25%]  bg-blue-1 absolute right-0 md:hidden"
-                >
-                  <div
-                    className={`${
-                      tab_progress === 25 &&
-                      "bg-blue-7 w-[25%] h-[2px] rounded-[10px] dark:bg-blue-8"
-                    } ${
-                      tab_progress === 50 &&
-                      "bg-blue-7 w-[50%] h-[2px] rounded-[10px] dark:bg-blue-8"
-                    } ${
-                      tab_progress === 75 &&
-                      "bg-blue-7 w-[75%] h-[3px] rounded-[10px] dark:bg-blue-8"
-                    } ${
-                      tab_progress === 100 &&
-                      "bg-blue-7 w-[100%] h-[2px] rounded-[10px] dark:bg-blue-8"
-                    }`}
-                  ></div>
-                </li>
-                <li
-                  className={`mt-2 py-[10px] px-[20px] max-md:px-2 ${
-                    current_page === "Home" &&
-                    "text-[1rem] font-bold text-blue-9 border-l-[2px] border-l-blue-9  max-md:border-b-[2px] max-md:border-b-blue-9 max-md:border-l-0 max-md:w-auto max-md:inline-block dark:border-blue-28 dark:text-blue-33"
-                  } ${
-                    tab_progress > 25 &&
-                    " max-md:hidden border-l-[2px] border-l-blue-9 text-blue-8 dark:border-blue-28 dark:text-white-1"
-                  }`}
-                >
-                  Welcome
-                </li>
-                <li
-                  className={`py-[10px] px-[20px] max-md:px-2 ${
-                    tab_progress === 50 &&
-                    "text-[1rem] font-bold text-blue-9 border-l-[2px] border-l-blue-9  max-md:border-b-[2px] max-md:border-b-blue-9 max-md:border-l-0 max-md:w-auto max-md:inline-block dark:border-blue-28 dark:text-blue-33"
-                  } ${
-                    tab_progress < 50 &&
-                    "max-md:hidden dark:text-white-1 dark:text-opacity-60"
-                  } ${
-                    tab_progress > 50 &&
-                    "max-md:hidden border-l-[2px] border-l-blue-9 text-blue-8 dark:border-blue-28 dark:text-white-1"
-                  }`}
-                >
-                  Patient
-                </li>
-                <li
-                  className={`py-[10px] px-[20px] max-md:px-2${
-                    tab_progress === 75 &&
-                    "text-[1rem] font-bold text-blue-9 border-l-[2px] border-l-blue-9  max-md:border-b-[2px] max-md:border-b-blue-9 max-md:border-l-0 max-md:w-auto max-md:inline-block dark:border-blue-28 dark:text-blue-33"
-                  } ${
-                    tab_progress < 75 &&
-                    "max-md:hidden dark:text-white-1 dark:text-opacity-60"
-                  } ${
-                    tab_progress > 75 &&
-                    "max-md:hidden border-l-[2px] border-l-blue-9 text-blue-8 dark:border-blue-28 dark:text-white-1"
-                  }`}
-                >
-                  Symptom
-                </li>
-                <li
-                  className={`py-[10px] px-[20px] max-md:px-2 ${
-                    tab_progress === 100 &&
-                    "text-[1rem] font-bold text-blue-9 border-l-[2px] border-l-blue-9  max-md:border-b-[2px] max-md:border-b-blue-9 max-md:border-l-0 max-md:w-auto max-md:inline-block dark:border-blue-28 dark:text-blue-33"
-                  } ${
-                    tab_progress < 100 &&
-                    "max-md:hidden dark:text-white-1 dark:text-opacity-60"
-                  } ${
-                    tab_progress > 100 &&
-                    "max-md:hidden border-l-[2px] border-l-blue-9 text-blue-8 dark:border-blue-28 dark:text-white-1"
-                  }`}
-                >
-                  Disease
-                </li>
-              </ul>
+        <div className="max-w-6xl mx-auto">
+          {/* Header */}
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="text-center mb-8"
+          >
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-4 bg-gradient-to-br from-blue-500 to-cyan-500 shadow-lg">
+              <CheckCircle2 className="w-8 h-8 text-white" />
             </div>
-            <div
-              id=""
-              className="col-span-9 rounded-[0.5rem] pb-12 max-md:col-span-full mt-4 max-md:mt-20"
-            >
-              <div className="h-[50vh] overflow-y-auto pb-16">
+            <h1 className={`text-3xl md:text-4xl font-black mb-2 bg-gradient-to-r ${
+              isDarkMode
+                ? 'from-white via-blue-200 to-white'
+                : 'from-gray-900 via-blue-600 to-gray-900'
+            } bg-clip-text text-transparent`}>
+              Health Check & Disease Prediction
+            </h1>
+            <p className={`text-lg ${
+              isDarkMode ? 'text-gray-400' : 'text-gray-600'
+            }`}>
+              Get AI-powered insights about your health based on symptoms
+            </p>
+          </motion.div>
+
+          {/* Progress Bar */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="mb-8"
+          >
+            <div className={`h-2 rounded-full overflow-hidden ${
+              isDarkMode ? 'bg-gray-800' : 'bg-gray-200'
+            }`}>
+              <motion.div
+                className="h-full bg-gradient-to-r from-blue-600 to-cyan-600 rounded-full"
+                initial={{ width: 0 }}
+                animate={{ width: `${tab_progress}%` }}
+                transition={{ duration: 0.5, ease: "easeOut" }}
+              />
+            </div>
+            <div className="flex justify-between mt-4">
+              {steps.map((step) => {
+                const IconComponent = step.icon;
+                const isActive = tab_progress >= step.progress;
+                const isCurrent = current_page === step.page;
+                
+                return (
+                  <div key={step.id} className="flex flex-col items-center flex-1">
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-300 ${
+                      isActive
+                        ? 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-lg scale-110'
+                        : isDarkMode
+                          ? 'bg-gray-800 text-gray-500 border-2 border-gray-700'
+                          : 'bg-white text-gray-400 border-2 border-gray-300'
+                    }`}>
+                      {isActive ? <IconComponent className="w-5 h-5" /> : step.id}
+                    </div>
+                    <span className={`text-xs mt-2 font-medium text-center ${
+                      isActive
+                        ? isDarkMode ? 'text-blue-400' : 'text-blue-600'
+                        : isDarkMode ? 'text-gray-500' : 'text-gray-400'
+                    }`}>
+                      {step.name}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </motion.div>
+
+          {/* Main Content Card */}
+          <motion.main
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.3 }}
+            className={`rounded-2xl overflow-hidden shadow-2xl ${
+              isDarkMode
+                ? 'bg-gray-800 border border-gray-700'
+                : 'bg-white border border-gray-200'
+            }`}
+          >
+            {/* Content Area */}
+            <div className="p-6 md:p-8 min-h-[400px]">
+              <div className="h-full overflow-y-auto custom-scrollbar">
                 {this.showPage()}
               </div>
             </div>
-          </div>
 
-          <div className="m-4 border-[1px] border-t-blue-2 dark:border-white-1 dark:border-opacity-40"></div>
+            {/* Divider */}
+            <div className={`border-t ${
+              isDarkMode ? 'border-gray-700' : 'border-gray-200'
+            }`} />
 
-          <div className="second-grid">
-            <div
-              id="buttonsSection"
-              className="py-4 px-8 flex justify-between items-center"
-            >
-              <button
-                disabled={this.state.current_page === "Home"}
+            {/* Navigation Buttons */}
+            <div className="p-6 flex justify-between items-center gap-4">
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                disabled={current_page === "Home"}
                 onClick={this.get_previous_page}
-                className="bg-blue-3 border-[1px] border-blue-5 text-white-1 py-[10px] px-[12px] rounded-[5px] mb-[8px] mx-[20px] font-sans transition-all duration-300 ease-in-out hover:bg-blue-5 active:bg-blue-5 disabled:bg-blue-5 disabled:cursor-not-allowed dark:bg-blue-24 dark:hover:bg-blue-31 dark:disabled:bg-blue-24"
+                className={`px-6 py-3 rounded-xl font-semibold text-sm transition-all duration-300 flex items-center gap-2 ${
+                  current_page === "Home"
+                    ? isDarkMode
+                      ? 'bg-gray-800 text-gray-600 cursor-not-allowed border border-gray-700'
+                      : 'bg-gray-200 text-gray-400 cursor-not-allowed border border-gray-300'
+                    : isDarkMode
+                      ? 'bg-gray-700 text-gray-300 hover:bg-gray-600 border border-gray-600'
+                      : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300 shadow-md'
+                }`}
               >
+                <ChevronLeft className="w-4 h-4" />
                 Back
-              </button>
-              <button
-                className={`bg-blue-3 border-[1px] border-blue-5 text-white-1 py-[10px] px-[12px] rounded-[5px] mb-[8px] mx-[20px] font-sans transition-all duration-300 ease-in-out hover:bg-blue-5 active:bg-blue-5 disabled:bg-blue-5 disabled:cursor-not-allowed dark:bg-blue-24 dark:hover:bg-blue-31 dark:disabled:bg-blue-24`}
+              </motion.button>
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className={`px-8 py-3 rounded-xl font-semibold text-sm transition-all duration-300 ${
+                  !home_button_checked || button_is_disabled
+                    ? isDarkMode
+                      ? 'bg-gray-800 text-gray-600 cursor-not-allowed border border-gray-700'
+                      : 'bg-gray-200 text-gray-400 cursor-not-allowed border border-gray-300'
+                    : isDarkMode
+                      ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white hover:from-blue-500 hover:to-blue-600 shadow-lg shadow-blue-500/30'
+                      : 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white hover:from-blue-700 hover:to-cyan-700 shadow-lg shadow-blue-500/30'
+                }`}
                 disabled={!home_button_checked || button_is_disabled}
                 type="submit"
                 onClick={this.get_next_page}
               >
                 {button_name}
-              </button>
+              </motion.button>
             </div>
-          </div>
-        </main>
+          </motion.main>
+        </div>
       </div>
     );
   }

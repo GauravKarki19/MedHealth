@@ -1,16 +1,39 @@
-import React from "react";
+import React, { useState } from "react";
 import { CommonProvider } from "./contexts/common/commonContext";
 import { CartProvider } from "./contexts/cart/cartContext";
 import { FiltersProvider } from "./contexts/filters/filterContext";
-import Header from "./components/common/Header";
+import GovernmentHeader from "./components/common/GovernmentHeader";
 import RouterRoutes from "./routes/RouterRoutes";
-import Footer from "./components/common/Footer";
+import GovernmentFooter from "./components/common/GovernmentFooter";
 import httpClient from "./httpClient";
 import ChatBot from "./components/common/ChatBot";
+import AccountForm from "./components/form/Accountform";
+import Profile from "./components/common/Profile";
 // import CursorTrail from "./components/common/Cursortrail";
-import { DarkModeProvider } from "./contexts/DarkMode/DarkModeContext";
+import { DarkModeProvider, useDarkMode } from "./contexts/DarkMode/DarkModeContext";
+
+const AppContent = ({ isSignup, setIsSignup }) => {
+  const { isDarkMode } = useDarkMode();
+
+  return (
+    <>
+      <GovernmentHeader isSignup={isSignup} setIsSignup={setIsSignup} />
+      <main className={`min-h-screen transition-colors duration-300 ${
+        isDarkMode ? 'bg-gray-900' : 'bg-white'
+      }`}>
+        <RouterRoutes />
+      </main>
+      <GovernmentFooter />
+      <ChatBot />
+      <AccountForm isSignup={isSignup} setIsSignup={setIsSignup} />
+      <Profile />
+    </>
+  );
+};
 
 const App = () => {
+  const [isSignup, setIsSignup] = useState(false);
+
   setInterval(() => {
     localStorage.getItem("usertype") === "doctor" &&
       httpClient
@@ -39,10 +62,7 @@ const App = () => {
         <CommonProvider>
           <FiltersProvider>
             <CartProvider>
-              <Header />
-              <RouterRoutes />
-              <Footer />
-              <ChatBot />
+              <AppContent isSignup={isSignup} setIsSignup={setIsSignup} />
             </CartProvider>
           </FiltersProvider>
         </CommonProvider>

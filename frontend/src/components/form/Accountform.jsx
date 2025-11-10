@@ -1,9 +1,12 @@
 import React, { useContext, useEffect, useRef, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { X } from "lucide-react";
 import commonContext from "../../contexts/common/commonContext";
 import useOutsideClose from "../../hooks/useOutsideClose";
 import useScrollDisable from "../../hooks/useScrollDisable";
 import { Alert, CircularProgress } from "@mui/material";
 import httpClient from "../../httpClient";
+import { useDarkMode } from "../../contexts/DarkMode/DarkModeContext";
 import {
   FaUser,
   FaUserMd,
@@ -16,7 +19,7 @@ import {
 import { MdEmail } from "react-icons/md";
 import { FaLock } from "react-icons/fa6";
 import { IoEyeOutline, IoEyeOffOutline } from "react-icons/io5";
-import { auth, signInWithPopup, provider } from "../../firebase";
+import { auth, signInWithPopup, provider, isFirebaseConfigured } from "../../firebase";
 import heartRateLogo from "../../assets/heart-rate-logo.png";
 import doctorMale from "../../assets/doctor-male.png";
 import doctorFemale from "../../assets/doctor-female.png";
@@ -25,6 +28,7 @@ import patientFemale from "../../assets/patient-female.png";
 
 const AccountForm = ({ isSignup, setIsSignup }) => {
   const { isFormOpen, toggleForm, setFormUserInfo } = useContext(commonContext);
+  const { isDarkMode = false } = useDarkMode();
   const [username, setUsername] = useState("");
   const [usertype, setUsertype] = useState("patient");
   const [age, setAge] = useState("");
@@ -52,7 +56,8 @@ const AccountForm = ({ isSignup, setIsSignup }) => {
   const [profilePicFile, setProfilePicFile] = useState(null);
   const [isHovered, setIsHovered] = useState(false);
 
-  useOutsideClose(formRef, () => {
+  // Close form handler
+  const handleCloseForm = () => {
     toggleForm(false);
     setUsername("");
     setUsertype("patient");
@@ -66,7 +71,9 @@ const AccountForm = ({ isSignup, setIsSignup }) => {
     setDoctorId("");
     setProfilePic(null);
     setProfilePicFile(null);
-  });
+  };
+
+  useOutsideClose(formRef, handleCloseForm);
 
   useScrollDisable(isFormOpen);
 
@@ -164,6 +171,13 @@ const AccountForm = ({ isSignup, setIsSignup }) => {
   };
 
   const handleGoogleRegister = async () => {
+    if (!isFirebaseConfigured || !auth || !provider) {
+      setIsAlert("error");
+      setAlertCont("Google Sign-In is not configured. Please set up Firebase in your .env file.");
+      setTimeout(() => setIsAlert(""), 3000);
+      return;
+    }
+
     try {
       // Sign in with Google
       const result = await signInWithPopup(auth, provider);
@@ -227,6 +241,13 @@ const AccountForm = ({ isSignup, setIsSignup }) => {
   };
 
   const handleGoogleLogin = async () => {
+    if (!isFirebaseConfigured || !auth || !provider) {
+      setIsAlert("error");
+      setAlertCont("Google Sign-In is not configured. Please set up Firebase in your .env file.");
+      setTimeout(() => setIsAlert(""), 3000);
+      return;
+    }
+
     try {
       // Sign in with Google
       const result = await signInWithPopup(auth, provider);
@@ -399,86 +420,140 @@ const AccountForm = ({ isSignup, setIsSignup }) => {
   };
 
   return (
-    <>
+    <AnimatePresence>
       {isFormOpen && (
-        <div className="relative">
-          <div className="fixed inset-0 flex items-center justify-center z-[9999] bg-black-1/50 pointer-events-none">
-            <form
-              id=""
-              className="relative bg-blue-3 text-blue-8 max-w-[450px] max-h-[90vh] overflow-y-auto scrollbar-none w-full p-12 rounded-[3px] z-[99] max-xs:px-4 max-xs:py-8 mx-4 pointer-events-auto dark:bg-blue-25"
+        <>
+          {/* Backdrop */}
+          <motion.div
+            key="backdrop"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={handleCloseForm}
+            className="fixed inset-0 z-[9998] bg-black/50"
+          />
+          
+          {/* Modal Container - Centered with Flexbox */}
+          <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 pointer-events-none min-h-screen">
+            {/* Modal with Solid Gray Background */}
+            <motion.div
+              key="modal"
+              initial={{ opacity: 0, scale: 0.96, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.96, y: 10 }}
+              transition={{ type: "spring", stiffness: 400, damping: 35 }}
+              onClick={(e) => e.stopPropagation()}
+              className="relative w-full max-w-md max-h-[90vh] flex flex-col rounded-2xl shadow-2xl pointer-events-auto bg-gray-50 border border-gray-200 overflow-hidden"
               ref={formRef}
-              onSubmit={
-                isForgotPassword ? handleForgotPassword : handleFormSubmit
-              }
             >
-              {isAlert !== "" && (
-                <Alert severity={isAlert} className="form_sucess_alert">
-                  {alertCont}
-                </Alert>
-              )}
+            {/* Close Button */}
+            <button
+              type="button"
+              onClick={handleCloseForm}
+              className="absolute top-4 right-4 z-30 p-2 rounded-lg transition-all duration-200 text-gray-500 hover:text-gray-700 hover:bg-gray-100"
+            >
+              <X size={20} />
+            </button>
+            
+            <div className="flex-1 overflow-y-auto custom-scrollbar">
+            <form
+              onSubmit={isForgotPassword ? handleForgotPassword : handleFormSubmit}
+              className="relative z-10 p-8 pb-10 bg-gray-50"
+            >
 
-              {/*===== Form-Header =====*/}
-              <div className="text-white-1">
-                <h2 className="mb-[0.6rem]">
+              {/* Header Section */}
+              <div className="relative mb-6 text-center">
+                {/* Logo */}
+                <div className="flex justify-center mb-4">
+                  <div className="w-16 h-16 rounded-xl flex items-center justify-center bg-blue-50 border border-blue-200 shadow-md">
+                    <img
+                      src="/icon.png"
+                      alt="MedHealth"
+                      className="w-10 h-10 object-contain"
+                    />
+                  </div>
+                </div>
+
+                {/* Title */}
+                <h2 className="text-2xl font-bold mb-2 text-gray-800">
                   {isForgotPassword
-                    ? "Forgot Password"
+                    ? "Reset Password"
                     : isSignupVisible
-                    ? "Sign Up"
-                    : "Login"}
+                    ? "Create Account"
+                    : "Welcome Back"}
                 </h2>
+                
+                {/* Subtitle */}
+                <p className="text-sm mb-4 text-gray-600">
+                  {isForgotPassword
+                    ? "Enter your email to receive a reset link"
+                    : isSignupVisible
+                    ? "Join MedHealth to access healthcare services"
+                    : "Sign in to continue to MedHealth"}
+                </p>
+
+                {/* Switch Login/Register */}
                 {!isForgotPassword && (
-                  <p>
-                    {isSignupVisible
-                      ? "Already have an account ?"
-                      : "New to TelMedSphere ?"}
-                    &nbsp;&nbsp;
+                  <div className="flex justify-center">
                     <button
                       type="button"
                       onClick={handleIsSignupVisible}
-                      className="text-blue-1 opacity-80 hover:opacity-100"
+                      className="text-sm font-medium transition-colors text-blue-600 hover:text-blue-700 hover:underline"
                     >
-                      {isSignupVisible ? "Login" : "Create an account"}
+                      {isSignupVisible ? "Already have an account? Sign in" : "New here? Create an account"}
                     </button>
-                  </p>
+                  </div>
                 )}
               </div>
 
-              {/*===== Form-Body =====*/}
-              <div className="mt-7">
+              {/* Alert */}
+              {isAlert !== "" && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="mb-6"
+                >
+                  <Alert severity={isAlert} className="rounded-lg border bg-white">
+                    {alertCont}
+                  </Alert>
+                </motion.div>
+              )}
+
+              {/* Form Content */}
+              <div className="space-y-4">
+
+                {/* Profile Picture Upload - Only for Signup */}
                 {isSignupVisible && (
-                  <>
-                    <div className="relative mb-5">
+                  <div className="flex justify-center -mt-6 mb-2">
                       <div
-                        className="flex justify-center rounded-full relative w-[45%] aspect-square mx-auto bg-white-1 shadow-[0_0_5px_1px_#282f42] border-[2px] border-blue-3"
+                      className="relative group cursor-pointer"
                         onMouseEnter={() => setIsHovered(true)}
                         onMouseLeave={() => setIsHovered(false)}
                       >
+                      <div className="relative w-16 h-16 rounded-full overflow-hidden border-2 border-gray-300 bg-white group-hover:border-blue-400 transition-all duration-200 shadow-md">
                         <img
-                          src={profilePic || getDefaultProfilePic()} // Show uploaded image or default
+                          src={profilePic || getDefaultProfilePic()}
                           alt="Profile"
-                          className="w-full h-full rounded-full"
+                          className="w-full h-full object-cover"
                         />
-
-                        {/* Show delete icon on hover only if the user has uploaded a picture */}
                         {profilePic && isHovered && (
-                          <button
-                            className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white p-2 rounded-full shadow-md cursor-pointer border-2 border-red-500"
-                            onClick={removeProfilePic}
-                          >
-                            <FaTimes className="w-5 h-5 text-red-500" />
-                          </button>
+                          <div className="absolute inset-0 flex items-center justify-center bg-black/70 rounded-full">
+                            <FaTimes className="w-4 h-4 text-white" />
+                          </div>
                         )}
-
-                        {/* Edit Icon Positioned at Bottom-Right of the Image */}
+                      </div>
                         <label
                           htmlFor="profile_picture"
-                          className="absolute bottom-0 right-2 bg-white-1 p-2 rounded-full shadow-md cursor-pointer border-2 border-blue-3"
-                        >
-                          <FaPencilAlt className="w-5 h-5 text-blue-3" />
+                        className="absolute -bottom-0.5 -right-0.5 p-1 rounded-full cursor-pointer transition-all bg-blue-600 hover:bg-blue-700 border border-white"
+                        onClick={(e) => {
+                          if (profilePic && isHovered) {
+                            e.preventDefault();
+                            removeProfilePic();
+                          }
+                        }}
+                      >
+                        <FaPencilAlt className="w-2.5 h-2.5 text-white" />
                         </label>
-                      </div>
-
-                      {/* Hidden Input Field */}
                       <input
                         type="file"
                         name="profile_picture"
@@ -488,425 +563,313 @@ const AccountForm = ({ isSignup, setIsSignup }) => {
                         onChange={handleFileChange}
                       />
                     </div>
+                  </div>
+                )}
 
-                    <div className="relative mb-5">
-                      <label className="text-blue-1">Register as</label>
-                      <div className="mt-[10px]">
-                        <input
-                          type="radio"
-                          name="usertype"
-                          id="patient"
-                          className="appearance-none my-0 mx-[5px] w-[1.2em] h-[1.2em] bg-blue-1 content-none cursor-pointer outline-none rounded-[15px] -top-[2px] -left-[1px] relative inline-block visible border-[4px] border-blue-1 checked:bg-blue-8"
-                          value="patient"
-                          checked={usertype === "patient"}
-                          onChange={(e) => setUsertype(e.target.value)}
-                        />{" "}
-                        <label
-                          htmlFor="patient"
-                          className="cursor-pointer text-white-1 mr-4"
+                {/* User Type Selection - Only for Signup */}
+                {isSignupVisible && (
+                  <div className="mb-2">
+                    <div className="inline-flex p-1 rounded-lg bg-gray-100 border border-gray-300 shadow-sm">
+                      <button
+                        type="button"
+                        onClick={() => setUsertype("patient")}
+                        className={`px-4 py-2 rounded-md text-xs font-medium transition-all duration-200 ${
+                          usertype === "patient"
+                            ? 'bg-white text-blue-600 shadow-md'
+                            : 'text-gray-600 hover:text-gray-900 bg-transparent'
+                        }`}
                         >
                           Patient
-                        </label>
-                        <input
-                          type="radio"
-                          name="usertype"
-                          id="doctor"
-                          className="appearance-none my-0 mx-[5px] w-[1.2em] h-[1.2em] bg-blue-1 content-none cursor-pointer outline-none rounded-[15px] -top-[2px] -left-[1px] relative inline-block visible border-[4px] border-blue-1 checked:bg-blue-8"
-                          value="doctor"
-                          checked={usertype === "doctor"}
-                          onChange={(e) => setUsertype(e.target.value)}
-                        />{" "}
-                        <label
-                          htmlFor="doctor"
-                          className="cursor-pointer text-white-1 mr-4"
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setUsertype("doctor")}
+                        className={`px-4 py-2 rounded-md text-xs font-medium transition-all duration-200 ${
+                          usertype === "doctor"
+                            ? 'bg-white text-blue-600 shadow-md'
+                            : 'text-gray-600 hover:text-gray-900 bg-transparent'
+                        }`}
                         >
                           Doctor
-                        </label>
+                      </button>
                       </div>
                     </div>
+                )}
 
-                    {!isGoogleAuth && (
-                      <>
-                        <div className="relative mb-4">
-                          <FaUser
-                            className="absolute left-3 top-[15px] text-white-1"
-                            size={16}
-                          />
+                {/* Username Input - Only for Signup */}
+                {isSignupVisible && !isGoogleAuth && (
+                  <div>
                           <input
                             type="text"
                             name="username"
-                            placeholder="Username"
-                            className="py-3 px-3 pl-10 text-white-1 peer-disabled:cursor-not-allowed border-[1px] border-blue-1 w-full outline-none rounded-[3px] focus:border-[2px] focus:border-blue-1 placeholder:text-white-1 placeholder:text-opacity-50"
+                      placeholder="Full Name"
                             value={username}
                             onChange={(e) => setUsername(e.target.value)}
+                      className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white text-gray-800 placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition-all duration-200 text-sm shadow-sm"
                             required
                           />
                         </div>
+                )}
 
-                        {usertype === "doctor" && (
+                {/* Doctor Specific Fields */}
+                {isSignupVisible && !isGoogleAuth && usertype === "doctor" && (
                           <>
-                            <div className="relative mb-4">
-                              <FaUserMd
-                                className="absolute left-3 top-[15px] text-white-1"
-                                size={18}
-                              />
                               <input
                                 type="text"
                                 name="specialization"
-                                placeholder="Specialization"
-                                className="py-3 px-3 pl-10 text-white-1 peer-disabled:cursor-not-allowed border-[1px] border-blue-1 w-full outline-none rounded-[3px] focus:border-[2px] focus:border-blue-1 placeholder:text-white-1 placeholder:text-opacity-50"
+                      placeholder="Specialization (e.g., Cardiology, Pediatrics)"
                                 value={specialization}
-                                onChange={(e) =>
-                                  setSpecialization(e.target.value)
-                                }
+                      onChange={(e) => setSpecialization(e.target.value)}
+                      className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white text-gray-800 placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition-all duration-200 text-sm shadow-sm"
                                 required
-                              />
-                            </div>
-
-                            <div className="relative mb-4">
-                              <FaIdCard
-                                className="absolute left-3 top-[15px] text-white-1"
-                                size={18}
                               />
                               <input
                                 type="text"
                                 name="ID"
-                                placeholder="Doctor ID"
-                                className="py-3 px-3 pl-10 text-white-1 peer-disabled:cursor-not-allowed border-[1px] border-blue-1 w-full outline-none rounded-[3px] focus:border-[2px] focus:border-blue-1 placeholder:text-white-1 placeholder:text-opacity-50"
+                      placeholder="Doctor ID / License Number"
                                 value={doctorId}
                                 onChange={(e) => setDoctorId(e.target.value)}
+                      className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white text-gray-800 placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition-all duration-200 text-sm shadow-sm"
                                 required
                               />
-                            </div>
                           </>
                         )}
 
-                        {usertype === "patient" && (
+                {/* Patient Age Field */}
+                {isSignupVisible && !isGoogleAuth && usertype === "patient" && (
                           <div>
-                            <div className="relative mb-4">
-                              <FaUserClock
-                                className="absolute left-3 top-[15px] text-white-1"
-                                size={18}
-                              />
                               <input
                                 type="text"
                                 name="age"
                                 placeholder="Age"
-                                className="py-3 px-3 pl-10 text-white-1 peer-disabled:cursor-not-allowed border-[1px] border-blue-1 w-full outline-none rounded-[3px] focus:border-[2px] focus:border-blue-1 placeholder:text-white-1 placeholder:text-opacity-50"
                                 value={age}
                                 onChange={(e) => {
                                   checkAge(e.target.value);
                                   setAge(e.target.value);
                                 }}
+                      className={`w-full px-4 py-3 rounded-lg border border-gray-300 bg-white text-gray-800 placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition-all duration-200 text-sm shadow-sm ${isInvAge ? 'border-red-500 focus:ring-red-500' : ''}`}
                                 required
                               />
-                            </div>
                             {age !== "" && isInvAge && (
-                              <Alert
-                                severity="error"
-                                className="form_sucess_alert"
-                              >
-                                Invalid Age
-                              </Alert>
+                      <p className="mt-1.5 text-xs text-red-500">Please enter a valid age</p>
                             )}
                           </div>
                         )}
 
-                        <div className="relative mb-5">
-                          <label className="text-blue-1">Gender</label>
-                          <div className="mt-[10px]">
-                            <input
-                              type="radio"
-                              name="gender"
-                              id="male"
-                              className="appearance-none my-0 mx-[5px] w-[1.2em] h-[1.2em] bg-blue-1 content-none cursor-pointer outline-none rounded-[15px] -top-[2px] -left-[1px] relative inline-block visible border-[4px] border-blue-1 checked:bg-blue-8"
-                              value="male"
-                              checked={gender === "male"}
-                              onChange={(e) => setGender(e.target.value)}
-                            />{" "}
-                            <label
-                              htmlFor="male"
-                              className="cursor-pointer text-white-1 mr-4"
-                            >
-                              Male
-                            </label>
-                            <input
-                              type="radio"
-                              name="gender"
-                              id="female"
-                              className="appearance-none my-0 mx-[5px] w-[1.2em] h-[1.2em] bg-blue-1 content-none cursor-pointer outline-none rounded-[15px] -top-[2px] -left-[1px] relative inline-block visible border-[4px] border-blue-1 checked:bg-blue-8"
-                              value="female"
-                              checked={gender === "female"}
-                              onChange={(e) => setGender(e.target.value)}
-                            />{" "}
-                            <label
-                              htmlFor="female"
-                              className="cursor-pointer text-white-1 mr-4"
-                            >
-                              Female
-                            </label>
-                            <input
-                              type="radio"
-                              name="gender"
-                              id="other"
-                              className="appearance-none my-0 mx-[5px] w-[1.2em] h-[1.2em] bg-blue-1 content-none cursor-pointer outline-none rounded-[15px] -top-[2px] -left-[1px] relative inline-block visible border-[4px] border-blue-1 checked:bg-blue-8"
-                              value="other"
-                              checked={gender === "other"}
-                              onChange={(e) => setGender(e.target.value)}
-                            />{" "}
-                            <label
-                              htmlFor="other"
-                              className="cursor-pointer text-white-1 mr-4"
-                            >
-                              Other
-                            </label>
+                {/* Gender Selection - Only for Signup */}
+                {isSignupVisible && !isGoogleAuth && (
+                  <div>
+                    <div className="inline-flex p-1 rounded-lg bg-gray-100 border border-gray-300 shadow-sm">
+                      {['male', 'female', 'other'].map((gen) => (
+                        <button
+                          key={gen}
+                          type="button"
+                          onClick={() => setGender(gen)}
+                          className={`px-4 py-2 rounded-md text-xs font-medium transition-all duration-200 capitalize ${
+                            gender === gen
+                              ? 'bg-white text-blue-600 shadow-md'
+                              : 'text-gray-600 hover:text-gray-900 bg-transparent'
+                          }`}
+                        >
+                          {gen}
+                        </button>
+                      ))}
                           </div>
                         </div>
+                )}
 
-                        <div className="relative mb-4">
-                          <FaPhoneAlt
-                            className="absolute left-3 top-[15px] text-white-1"
-                            size={15}
-                          />
+                {/* Phone Number - Only for Signup */}
+                {isSignupVisible && !isGoogleAuth && (
+                  <div>
                           <input
                             type="text"
                             name="phone"
                             placeholder="Phone Number"
-                            className="py-3 px-3 pl-10 text-white-1 peer-disabled:cursor-not-allowed border-[1px] border-blue-1 w-full outline-none rounded-[3px] focus:border-[2px] focus:border-blue-1 placeholder:text-white-1 placeholder:text-opacity-50"
                             value={phone}
                             onChange={(e) => {
                               validatePhoneNumber(e.target.value);
                               setPhone(e.target.value);
                             }}
+                      className={`w-full px-4 py-3 rounded-lg border border-gray-300 bg-white text-gray-800 placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition-all duration-200 text-sm shadow-sm ${isInvPhone ? 'border-red-500 focus:ring-red-500' : ''}`}
                             required
                           />
-                        </div>
                         {phone !== "" && isInvPhone && (
-                          <Alert severity="error" className="input_alert">
-                            Invalid Phone Number
-                          </Alert>
+                      <p className="mt-1.5 text-xs text-red-500">Please enter a valid phone number</p>
                         )}
-                      </>
-                    )}
-                  </>
+                  </div>
                 )}
 
+                {/* Email Input */}
                 {!isGoogleAuth && (
-                  <>
                     <div>
-                      <div className="relative mb-4">
-                        <MdEmail
-                          className="absolute left-3 top-[15px] text-white-1"
-                          size={18}
-                        />
                         <input
-                          type="text"
+                      type="email"
                           name="email"
-                          placeholder="Email"
-                          className="py-3 px-3 pl-10 text-white-1 peer-disabled:cursor-not-allowed border-[1px] border-blue-1 w-full outline-none rounded-[3px] focus:border-[2px] focus:border-blue-1 placeholder:text-white-1 placeholder:text-opacity-50"
+                      placeholder="Email address"
                           value={email}
                           onChange={(e) => {
                             checkEmail(e.target.value);
                             setEmail(e.target.value);
                           }}
+                      className={`w-full px-4 py-3 rounded-lg border border-gray-300 bg-white text-gray-800 placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition-all duration-200 text-sm shadow-sm ${isInvEmail ? 'border-red-500 focus:ring-red-500' : ''}`}
                           required
                         />
-                      </div>
                       {email !== "" && isInvEmail && (
-                        <Alert severity="error" className="input_alert">
-                          Invalid Email
-                        </Alert>
+                      <p className="mt-1.5 text-xs text-red-500">Please enter a valid email address</p>
                       )}
                     </div>
+                )}
 
-                    {!isForgotPassword && (
-                      <div>
-                        <div className="relative mb-4">
-                          <FaLock
-                            className="absolute left-3 top-[15px] text-white-1 transition-opacity duration-300 hover:opacity-80 cursor-pointer"
-                            size={16}
-                          />
+                {/* Password Input */}
+                {!isForgotPassword && !isGoogleAuth && (
+                  <div className="relative">
                           <input
                             type={showPassword ? "text" : "password"}
                             name="password"
                             placeholder="Password"
-                            className="appearance-none py-3 px-3 pl-10 text-white-1 peer-disabled:cursor-not-allowed border-[1px] border-blue-1 w-full outline-none rounded-[3px] focus:border-[2px] focus:border-blue-1 placeholder:text-white-1 placeholder:text-opacity-50"
                             value={passwd}
                             onChange={(e) => {
                               checkPasswd(e.target.value);
                               setPasswd(e.target.value);
                             }}
+                      className={`w-full px-4 py-3 pr-10 rounded-lg border border-gray-300 bg-white text-gray-800 placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition-all duration-200 text-sm shadow-sm ${isInvPass ? 'border-red-500 focus:ring-red-500' : ''}`}
                             required
-                            autoComplete=""
+                      autoComplete="new-password"
                           />
-                          <span
+                    <button
+                      type="button"
                             onClick={togglePasswordVisibility}
-                            className="absolute right-3 top-[15px] cursor-pointer transition-transform duration-500 hover:scale-125"
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 p-1 rounded transition-colors text-gray-400 hover:text-gray-600"
                           >
                             {showPassword ? (
-                              <IoEyeOffOutline
-                                size={18}
-                              />
+                        <IoEyeOffOutline size={18} />
                             ) : (
-                              <IoEyeOutline
-                                size={18}
-                              />
+                        <IoEyeOutline size={18} />
                             )}
-                          </span>
-                        </div>
-
+                    </button>
                         {isSignupVisible && passwd !== "" && isInvPass && (
-                          <Alert severity="warning" className="input_alert">
-                            Password should contain at least 6 characters
-                          </Alert>
+                      <p className="mt-1.5 text-xs text-amber-500">Password must be at least 6 characters</p>
                         )}
                       </div>
                     )}
 
-                    {!isSignupVisible && !isForgotPassword && (
+                {/* Forgot Password Link */}
+                {!isSignupVisible && !isForgotPassword && !isGoogleAuth && (
+                  <div className="flex justify-end -mt-2">
                       <button
                         type="button"
                         onClick={() => setIsForgotPassword(true)}
-                        className="text-blue-1 text-sm hover:underline text-left outline-none border-none"
+                      className="text-xs font-medium transition-colors text-blue-600 hover:text-blue-700"
                       >
-                        Forgot Password?
+                      Forgot password?
                       </button>
+                  </div>
                     )}
 
+                {/* Back to Login Link */}
                     {isForgotPassword && (
+                  <div className="flex justify-start -mt-2">
                       <button
                         type="button"
                         onClick={() => setIsForgotPassword(false)}
-                        className="text-blue-1 text-sm hover:underline text-left outline-none border-none"
+                      className="text-xs font-medium transition-colors text-blue-600 hover:text-blue-700"
                       >
-                        Back to Login
+                      ← Back to login
                       </button>
-                    )}
-                  </>
+                  </div>
                 )}
 
+                {/* Submit Button */}
                 {isTelMedSphereAuth && (
                   <button
                     type="submit"
-                    className="mt-[0.8rem] mb-[0.4rem] bg-blue-7 hover:bg-blue-6 disabled:bg-blue-7 disabled:cursor-not-allowed py-[0.8rem] px-6 rounded-[3px] transition-colors duration-200 ease-out text-blue-1 w-full"
                     disabled={
-                      // Disable the button in the following cases:
-                      // - If "Forgot Password" is active and the email is invalid, but only if Google Auth is not used
-                      (!isGoogleAuth && isForgotPassword && isInvEmail) || // Disable if Forgot Password and email is invalid, unless Google Auth
-                      (isSignupVisible &&
-                        (isInvAge || isInvEmail || isInvPass)) || // Disable if Sign Up and any input is invalid
-                      (!isForgotPassword &&
-                        !isSignupVisible &&
-                        (isInvEmail || isInvPass)) // Disable if Login and email or password is invalid
+                      (!isGoogleAuth && isForgotPassword && isInvEmail) ||
+                      (isSignupVisible && (isInvAge || isInvEmail || isInvPass)) ||
+                      (!isForgotPassword && !isSignupVisible && (isInvEmail || isInvPass))
                     }
+                    className="w-full mt-2 py-3 rounded-lg font-semibold text-base transition-all duration-300 bg-blue-600 hover:bg-blue-700 text-white shadow-md hover:shadow-lg disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed disabled:hover:shadow-md"
                   >
                     {isSuccessLoading ? (
-                      <CircularProgress size={24} />
+                      <div className="flex items-center justify-center">
+                        <CircularProgress size={20} className="mr-2" />
+                        <span>Processing...</span>
+                      </div>
                     ) : isForgotPassword ? (
                       "Send Reset Link"
                     ) : isSignupVisible ? (
-                      "Sign Up"
+                      "Create Account"
                     ) : (
-                      "Login"
+                      "Sign In"
                     )}
                   </button>
                 )}
 
+                {/* Google Auth Button */}
                 {isGoogleAuth && (
-                  <>
                     <button
                       type="submit"
-                      className="mt-[0.8rem] mb-[0.4rem] w-full flex justify-center items-center bg-white-1 rounded-[3px] px-6 py-2 text-sm font-medium text-gray-800 hover:bg-gray-200"
+                    className="w-full mt-2 py-3 rounded-lg font-medium text-base transition-all duration-300 flex items-center justify-center gap-2 border-2 bg-white text-gray-900 hover:bg-gray-50 hover:border-gray-300 border-gray-300 shadow-md hover:shadow-lg"
                     >
                       <img
                         src="https://img.icons8.com/fluency/48/google-logo.png"
-                        alt="google-logo"
-                        className="max-h-[25px] mr-2"
+                      alt="google"
+                      className="w-5 h-5"
                       />
                       <span>
-                        {isSignupVisible ? "Sign Up" : "Login"} with Google
+                      {isSignupVisible ? "Sign Up" : "Sign In"} with Google
                       </span>
                     </button>
-                  </>
                 )}
-              </div>
 
+                {/* Auth Method Switcher */}
               {!isForgotPassword && (
-                <div className="mt-12 w-full">
-                  <div className="mb-8">
-                    <div className="border-t-[2px] border-blue-1 w-full h-2"></div>
-                    <div className="relative flex justify-center">
-                      <span class="absolute -top-4 text-center text-sm text-blue-1 bg-blue-3 px-4 dark:bg-blue-25">
-                        {isSignupVisible ? "Sign Up using" : "Sign In using"}
-                      </span>
+                  <div className="mt-6 pt-6 border-t border-gray-300">
+                    <p className="text-center text-xs mb-4 text-gray-600 font-medium">
+                      {isSignupVisible ? "Sign up using" : "Sign in using"}
+                    </p>
+                    <div className="flex items-center justify-center gap-4">
+                      <button
+                        type="button"
+                        onClick={() => handleAuthApp(0)}
+                        className={`p-3 rounded-xl transition-all duration-300 shadow-md hover:shadow-lg ${
+                          isTelMedSphereAuth
+                            ? 'bg-blue-100 border-2 border-blue-400 scale-110'
+                            : 'bg-white border-2 border-gray-300 hover:border-gray-400 hover:scale-105'
+                        }`}
+                      >
+                        <img
+                          src={heartRateLogo}
+                          alt="MedHealth"
+                          className="w-5 h-5 object-contain"
+                        />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleAuthApp(1)}
+                        className={`p-3 rounded-xl transition-all duration-300 shadow-md hover:shadow-lg ${
+                          isGoogleAuth
+                            ? 'bg-blue-100 border-2 border-blue-400 scale-110'
+                            : 'bg-white border-2 border-gray-300 hover:border-gray-400 hover:scale-105'
+                        }`}
+                      >
+                        <img
+                          src="https://img.icons8.com/fluency/48/google-logo.png"
+                          alt="Google"
+                          className="w-5 h-5 object-contain"
+                        />
+                      </button>
                     </div>
                   </div>
-                  <div class="rounded-md px-2 relative">
-                    <div class="flex items-center justify-center gap-x-6">
-                      <div class="relative flex h-[40px] w-[40px] items-center justify-center">
-                        <input
-                          type="radio"
-                          id="TelMedSphereAuth"
-                          name="authMethod"
-                          value="TelMedSphereAuth"
-                          class="peer z-10 h-full w-full opacity-0"
-                          onChange={() => handleAuthApp(0)}
-                          checked={isTelMedSphereAuth}
-                        />
-                        <label
-                          htmlFor="TelMedSphereAuth"
-                          className="absolute top-0 left-0 cursor-pointer peer-checked:translate peer-checked:scale-[1.1] peer-checked:bg-white-1 peer-checked:border-[3px] border-white-1 rounded-full peer-checked:p-[0.4rem] p-[0.3rem] flex justify-center items-center peer-checked:shadow-blue-7 peer-checked:shadow-[0px_2px_4px_#282f42,_inset_0px_0px_7px_#282f42]"
-                        >
-                          <img
-                            src={heartRateLogo}
-                            alt="telMedSphere-logo"
-                            className={`z-50 relative left-[0.39px] ${
-                              isTelMedSphereAuth
-                                ? "top-[1.5px]"
-                                : "top-[0.27px]"
-                            }`}
-                          />
-                        </label>
-                      </div>
-                      <div class="relative flex h-[41px] w-[41px] items-center justify-center">
-                        <input
-                          type="radio"
-                          id="GoogleAuth"
-                          name="authMethod"
-                          value="GoogleAuth"
-                          class="peer z-10 h-full w-full opacity-0"
-                          onChange={() => handleAuthApp(1)}
-                          checked={isGoogleAuth}
-                        />
-                        <label
-                          htmlFor="GoogleAuth"
-                          className="peer-checked:border-[3px] peer-checked:border-white-1 absolute z-50 top-0 left-0 cursor-pointer peer-checked:bg-white-1 rounded-full peer-checked:p-[0.35rem] p-[0.3rem] peer-checked:shadow-[0px_2px_4px_#282f42,_inset_0px_0px_7px_#282f42]"
-                        >
-                          <img
-                            src="https://img.icons8.com/fluency/48/google-logo.png"
-                            alt="google-logo"
-                            className="z-50 w-full h-full"
-                          />
-                        </label>
-                      </div>
-                    </div>
-                  </div>
-                </div>
               )}
-
-              {/*===== Form-Close-Btn =====*/}
-              <div
-                className="bg-[rgba(176,187,216,0.5)] text-white-1 absolute top-0 right-0 w-[30px] h-[30px] text-[1.8rem] leading-[30px] text-center cursor-pointer overflow-hidden opacity-80 transition-opacity duration-200 hover:opacity-100 dark:bg-blue-6 dark:hover:bg-blue-4"
-                title="Close"
-                onClick={() => toggleForm(false)}
-              >
-                &times;
               </div>
             </form>
+            </div>
+            </motion.div>
           </div>
-        </div>
+        </>
       )}
-    </>
+    </AnimatePresence>
   );
 };
 

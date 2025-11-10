@@ -1,34 +1,23 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { FaGithub, FaDiscord } from "react-icons/fa";
 import { motion } from "framer-motion";
 
 const AboutUs = () => {
-  // Data remains the same as your original component
-  const projectAdmins = [
+  const teamMembers = [
     {
-      name: "Pratik Mane",
-      role: "Project Admin",
-      github: "https://github.com/PratikMane0112",
-      avatar: "https://avatars.githubusercontent.com/u/153143167?v=4",
+      name: "Gaurav Karki",
+      role: "Founder & CEO",
+      avatar: "https://ui-avatars.com/api/?name=Gaurav+Karki&background=3b82f6&color=fff&size=200",
     },
     {
-      name: "Harshwardhan Patil",
-      role: "KWoC Mentor",
-      github: "https://github.com/HarshwardhanPatil07",
-      avatar: "https://avatars.githubusercontent.com/u/126240589?v=4",
+      name: "Yash Pandey",
+      role: "Co-Founder & CTO",
+      avatar: "https://ui-avatars.com/api/?name=Yash+Pandey&background=10b981&color=fff&size=200",
     },
     {
-      name: "Aditya Bavadekar",
-      role: "SWoC Mentor",
-      github: "https://github.com/AdityaBavadekar",
-      avatar: "https://avatars.githubusercontent.com/u/64344960?v=4",
-    },
-    {
-      name: "Raj Khanke",
-      role: "DWoC Mentor",
-      github: "https://github.com/RajKhanke",
-      avatar: "https://avatars.githubusercontent.com/u/137288727?v=4",
+      name: "Priyanshu SenGupta",
+      role: "Co-Founder & CPO",
+      avatar: "https://ui-avatars.com/api/?name=Priyanshu+SenGupta&background=8b5cf6&color=fff&size=200",
     },
   ];
 
@@ -55,75 +44,70 @@ const AboutUs = () => {
     },
   ];
 
-  const pandemicFeatures = [
+  const platformFeatures = [
     {
-      title: "Remote Consultations",
+      title: "Smart Doctor Search",
       description:
-        "Secure video conferencing and chat features to maintain social distancing while providing quality care. Connect with specialists worldwide.",
-      icon: "🏥",
-      image:
-        "https://raw.githubusercontent.com/PratikMane0112/TelMedSphere/master/Overview/telemedicine.jpg",
+        "Find qualified doctors by specialty, availability, and location. Our intelligent search helps you discover the best healthcare providers near you with real-time availability.",
+      icon: "🔍",
+      image: "/public/doctor-image.png",
       stats: {
-        value: "90%",
-        label: "Patient Satisfaction",
+        value: "1000+",
+        label: "Verified Doctors",
       },
-      features: ["24/7 Access", "Multi-language Support", "HD Video Quality"],
+      features: ["Specialty Filter", "Location-based Search", "Availability Check"],
     },
     {
-      title: "AI Symptom Checker",
+      title: "Real-time Appointment Booking",
       description:
-        "Advanced AI-powered system for early detection of COVID-19 and other health conditions using machine learning algorithms.",
-      icon: "🤖",
-      image:
-        "https://raw.githubusercontent.com/PratikMane0112/TelMedSphere/master/Overview/ai-health.jpg",
+        "Book appointments instantly with real-time slot availability. Our system prevents double bookings and sends instant confirmations with reminders.",
+      icon: "📅",
+      image: "/public/doctor-image.png",
       stats: {
-        value: "95%",
-        label: "Accuracy Rate",
+        value: "24/7",
+        label: "Booking Available",
       },
-      features: ["Real-time Analysis", "Multiple Symptoms", "Risk Assessment"],
+      features: ["Instant Booking", "Conflict Prevention", "Auto Reminders"],
     },
     {
-      title: "Resource Allocation",
+      title: "Location-based Services",
       description:
-        "Smart tracking system for medical resources, hospital beds, and emergency services availability during health crises.",
-      icon: "📊",
-      image:
-        "https://raw.githubusercontent.com/PratikMane0112/TelMedSphere/master/Overview/hospital-resources.jpg",
+        "Find doctors based on your location with distance calculations. Get directions to clinics and see nearby healthcare facilities on an interactive map.",
+      icon: "📍",
+      image: "/public/doctor-image.png",
       stats: {
-        value: "500+",
-        label: "Connected Hospitals",
+        value: "50km",
+        label: "Search Radius",
       },
       features: [
-        "Live Bed Tracking",
-        "Equipment Monitoring",
-        "Staff Allocation",
+        "Distance Calculation",
+        "Map Integration",
+        "Clinic Directions",
       ],
     },
     {
-      title: "Health Analytics",
+      title: "Medicine Marketplace",
       description:
-        "Comprehensive health data analytics platform for tracking pandemic trends and patient outcomes.",
-      icon: "📈",
-      image:
-        "https://raw.githubusercontent.com/PratikMane0112/TelMedSphere/master/Overview/health-analytics.jpg",
+        "Purchase prescribed medicines and health products from our verified pharmacy partners. Fast delivery and secure payment options available.",
+      icon: "💊",
+      image: "/public/doctor-image.png",
       stats: {
-        value: "1M+",
-        label: "Data Points Analyzed",
+        value: "5000+",
+        label: "Medicines Available",
       },
-      features: ["Trend Analysis", "Predictive Modeling", "Regional Insights"],
+      features: ["Verified Pharmacy", "Fast Delivery", "Secure Payment"],
     },
     {
-      title: "Emergency Response",
+      title: "Health Analytics Dashboard",
       description:
-        "Rapid emergency response system with real-time coordination between healthcare providers and emergency services.",
-      icon: "🚑",
-      image:
-        "https://raw.githubusercontent.com/PratikMane0112/TelMedSphere/master/Overview/emergency.jpg",
+        "Doctors can track their appointments, patient history, and clinic performance through comprehensive analytics and insights.",
+      icon: "📊",
+      image: "/public/doctor-image.png",
       stats: {
-        value: "3min",
-        label: "Avg. Response Time",
+        value: "Real-time",
+        label: "Analytics",
       },
-      features: ["Quick Dispatch", "GPS Tracking", "Priority Routing"],
+      features: ["Appointment Insights", "Patient Trends", "Performance Metrics"],
     },
   ];
 
@@ -184,27 +168,27 @@ const AboutUs = () => {
               <div>
                 <motion.span
                   whileHover={{ scale: 1.05 }}
-                  className="inline-block px-4 py-1 text-sm font-medium bg-blue-5 dark:bg-blue-24 text-white-1 rounded-full mb-4"
+                  className="inline-block px-4 py-1 text-sm font-medium bg-blue-600 text-white rounded-full mb-4"
                 >
-                  Open Source Healthcare Initiative
+                  Modern Healthcare Platform
                 </motion.span>
                 <motion.h1
                   initial={{ y: 20, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
                   transition={{ delay: 0.2, duration: 0.8 }}
-                  className="text-5xl md:text-6xl font-bold text-gray-900 mb-6 leading-tight dark:text-white-1"
+                  className="text-5xl md:text-6xl font-bold text-gray-900 mb-6 leading-tight dark:text-white"
                 >
-                  Revolutionizing Telehealth in Pandemic Times
+                  Your Health, Our Priority
                 </motion.h1>
                 <motion.p
                   initial={{ y: 20, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
                   transition={{ delay: 0.4, duration: 0.8 }}
-                  className="text-xl text-blue-7 leading-relaxed dark:text-white-10"
+                  className="text-xl text-gray-600 leading-relaxed dark:text-gray-300"
                 >
-                  TelMedSphere bridges the gap between patients and healthcare
-                  providers through AI-powered solutions, especially critical
-                  during global health crises.
+                  MedHealth connects patients with qualified healthcare professionals 
+                  through an intuitive platform that makes finding and booking doctor 
+                  appointments simple, fast, and convenient.
                 </motion.p>
               </div>
               <motion.div
@@ -218,22 +202,22 @@ const AboutUs = () => {
                   whileTap={{ scale: 0.95 }}
                 >
                   <Link
-                    to="/learn-more"
-                    className="inline-flex items-center px-8 py-4 bg-blue-5 dark:bg-blue-24 text-white-1 font-medium rounded-xl hover:bg-blue-6 transition-all duration-300 text-lg dark:hover:bg-blue-31"
+                    to="/doctor-search"
+                    className="inline-flex items-center px-8 py-4 bg-blue-600 text-white font-medium rounded-xl hover:bg-blue-700 transition-all duration-300 text-lg"
                   >
-                    Start Free Consultation
+                    Find Doctors
                   </Link>
                 </motion.div>
                 <motion.div
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
-                  <a
-                    href="https://discord.gg/qsdDRKak28"
-                    className="inline-flex items-center px-8 py-4 bg-white text-gray-700 font-medium rounded-xl hover:bg-gray-50 transition-all duration-300 text-lg border-2 border-gray-200 dark:text-white-1 dark:hover:text-gray-700"
+                  <Link
+                    to="/contact"
+                    className="inline-flex items-center px-8 py-4 bg-white text-gray-700 font-medium rounded-xl hover:bg-gray-50 transition-all duration-300 text-lg border-2 border-gray-200 dark:text-white dark:hover:bg-gray-100"
                   >
-                    <FaDiscord className="mr-2 text-2xl " /> Join Community
-                  </a>
+                    Contact Us
+                  </Link>
                 </motion.div>
               </motion.div>
             </motion.div>
@@ -247,33 +231,33 @@ const AboutUs = () => {
               <motion.div
                 animate={{
                   scale: [1, 1.02, 1],
-                  rotate: [0, 1, -1, 0],
+                  y: [0, -10, 0],
                 }}
                 transition={{
-                  duration: 5,
+                  duration: 6,
                   repeat: Infinity,
                   repeatType: "reverse",
                 }}
-                style={{ mixBlendMode: "normal" }}
                 className="relative"
               >
-                <img
-                  src="aboutus-image.png"
-                  alt="Platform Preview"
-                  className="w-full h-auto max-w-[800px] object-contain mx-10"
-                  style={{
-                    mixBlendMode: "multiply",
-                    filter: "contrast(1.1)",
-                    transform: "scale(1.15)",
-                  }}
-                />
+                <div className="relative w-full h-[500px] rounded-3xl overflow-hidden shadow-2xl bg-gradient-to-br from-blue-100 to-blue-200">
+                  <img
+                    src="https://images.pexels.com/photos/3825586/pexels-photo-3825586.jpeg?auto=compress&cs=tinysrgb&w=1200&h=800&fit=crop"
+                    alt="Healthcare Professional"
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      e.target.src = "https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=1200&auto=format&fit=crop";
+                    }}
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-blue-900/30 via-blue-600/10 to-transparent"></div>
+                </div>
               </motion.div>
             </motion.div>
           </div>
         </div>
       </motion.section>
 
-      {/* Pandemic Features Section */}
+      {/* Platform Features Section */}
       <motion.section
         variants={containerVariants}
         initial="hidden"
@@ -283,32 +267,31 @@ const AboutUs = () => {
       >
         <div className="max-w-6xl mx-auto">
           <motion.div variants={itemVariants} className="text-center mb-12">
-            <h2 className="text-4xl font-bold mb-4">
-              Pandemic-Ready Infrastructure
+            <h2 className="text-4xl font-bold mb-4 dark:text-white">
+              Comprehensive Healthcare Solutions
             </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto dark:text-white-1">
-              Designed with lessons from COVID-19 to handle future health
-              emergencies effectively
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto dark:text-gray-300">
+              Everything you need for your healthcare journey in one convenient platform
             </p>
           </motion.div>
           <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
-            {pandemicFeatures.map((feature, index) => (
+            {platformFeatures.map((feature, index) => (
               <motion.div
                 key={index}
                 variants={itemVariants}
                 whileHover={cardHoverVariants.hover}
-                className="bg-white-1 rounded-xl p-6 shadow-lg transition-all duration-300 dark:bg-black-0"
+                className="bg-white rounded-xl p-6 shadow-lg transition-all duration-300 dark:bg-gray-800"
               >
                 <div className="text-center">
                   <motion.div
                     whileHover={{ rotate: 360 }}
                     transition={{ duration: 0.5 }}
-                    className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4 dark:bg-black-10"
+                    className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4 dark:bg-blue-900"
                   >
                     <span className="text-3xl">{feature.icon}</span>
                   </motion.div>
-                  <h3 className="text-xl font-bold mb-3">{feature.title}</h3>
-                  <p className="text-gray-600 text-sm leading-relaxed dark:text-yellow-1">
+                  <h3 className="text-xl font-bold mb-3 dark:text-white">{feature.title}</h3>
+                  <p className="text-gray-600 text-sm leading-relaxed dark:text-gray-300">
                     {feature.description}
                   </p>
                   <motion.div
@@ -324,10 +307,10 @@ const AboutUs = () => {
                           initial={{ x: -20, opacity: 0 }}
                           whileInView={{ x: 0, opacity: 1 }}
                           transition={{ delay: i * 0.1 }}
-                          className="text-sm text-gray-600 flex items-center justify-center dark:text-yellow-1"
+                          className="text-sm text-gray-600 flex items-center justify-center dark:text-gray-300"
                         >
                           <svg
-                            className="w-4 h-4 text-green-500 mr-2 dark:text-green-6"
+                            className="w-4 h-4 text-green-500 mr-2"
                             fill="currentColor"
                             viewBox="0 0 20 20"
                           >
@@ -359,20 +342,20 @@ const AboutUs = () => {
       >
         <div className="max-w-5xl mx-auto">
           <motion.div variants={itemVariants} className="text-center mb-12">
-            <h2 className="text-4xl font-bold mb-4 dark:text-white-1">
-              Project Leadership
+            <h2 className="text-4xl font-bold mb-4 dark:text-white">
+              Our Team
             </h2>
-            <p className="text-xl text-gray-600 dark:text-yellow-1">
-              Driving innovation in open source healthcare
+            <p className="text-xl text-gray-600 dark:text-gray-300">
+              Dedicated professionals committed to improving healthcare access
             </p>
           </motion.div>
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {projectAdmins.map((admin, index) => (
+          <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
+            {teamMembers.map((member, index) => (
               <motion.div
-                key={admin.name}
+                key={member.name}
                 variants={itemVariants}
                 whileHover={cardHoverVariants.hover}
-                className="bg-white rounded-2xl p-6 shadow-lg group dark:bg-black-0 dark:shadow-[0_0_10px_2px_#e4f6ff]"
+                className="bg-white rounded-2xl p-6 shadow-lg group dark:bg-gray-800"
               >
                 <div className="text-center">
                   <motion.div
@@ -380,31 +363,20 @@ const AboutUs = () => {
                     className="w-full aspect-square max-w-[200px] mx-auto mb-6 overflow-hidden rounded-2xl"
                   >
                     <img
-                      src={admin.avatar}
-                      alt={admin.name}
+                      src={member.avatar}
+                      alt={member.name}
                       className="w-full h-full object-cover"
                     />
                   </motion.div>
-                  <h3 className="text-2xl font-bold mb-2 dark:text-white-10">
-                    {admin.name}
+                  <h3 className="text-2xl font-bold mb-2 dark:text-white">
+                    {member.name}
                   </h3>
                   <motion.span
                     whileHover={{ scale: 1.05 }}
-                    className="inline-block px-4 py-1 bg-blue-100 text-blue-8 rounded-full text-sm font-medium mb-4 dark:text-blue-33 dark:bg-black-10"
+                    className="inline-block px-4 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium dark:bg-blue-900 dark:text-blue-200"
                   >
-                    {admin.role}
+                    {member.role}
                   </motion.span>
-                  <motion.div whileHover={{ scale: 1.05 }} className="mt-4">
-                    <a
-                      href={admin.github}
-                      className="inline-flex items-center justify-center w-full py-2 px-4 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors dark:text-yellow-1 dark:bg-black-10"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      <FaGithub className="mr-2 text-lg" />
-                      GitHub
-                    </a>
-                  </motion.div>
                 </div>
               </motion.div>
             ))}
@@ -422,47 +394,61 @@ const AboutUs = () => {
       >
         <div className="max-w-5xl mx-auto">
           <motion.div variants={itemVariants} className="text-center mb-16">
-            <h2 className="text-4xl font-bold mb-4 dark:text-white-1">
-              Our Global Contributors
+            <h2 className="text-4xl font-bold mb-4 dark:text-white">
+              Our Mission
             </h2>
-            <p className="text-xl text-gray-600 dark:text-yellow-1">
-              Join 100+ developers shaping the future of telehealth
+            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
+              MedHealth is committed to making quality healthcare accessible to everyone. 
+              We believe that finding the right doctor and booking appointments should be 
+              simple, transparent, and convenient. Our platform connects patients with 
+              verified healthcare professionals, ensuring you receive the care you need when you need it.
             </p>
           </motion.div>
           <motion.div
-            whileHover={{ scale: 1.02 }}
-            className="relative group px-5"
+            variants={itemVariants}
+            className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto"
           >
             <motion.div
-              transition={{
-                duration: 4,
-                repeat: Infinity,
-                repeatType: "reverse",
-              }}
-              className="absolute inset-0 bg-gradient-to-r from-blue-50 to-purple-50 opacity-50 rounded-3xl shadow-lg dark:bg-none dark:bg-black-0 dark:shadow-[0_0_10px_1px_#e4f6ff] dark:opacity-100"
-            />
-            <a
-              href="https://github.com/PratikMane0112/TelMedSphere/graphs/contributors"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="relative block overflow-hidden rounded-2xl px-5"
+              whileHover={{ y: -5 }}
+              className="bg-blue-50 rounded-xl p-6 dark:bg-gray-800"
             >
-              <img
-                src="https://contrib.rocks/image?repo=PratikMane0112/TelMedSphere&columns=12&anon=1&merge=true&max=200"
-                alt="Project Contributors"
-                className="w-full h-auto min-h-[400px] object-contain"
-              />
-            </a>
+              <div className="text-4xl mb-4">🎯</div>
+              <h3 className="text-xl font-bold mb-2 dark:text-white">Our Vision</h3>
+              <p className="text-gray-600 dark:text-gray-300">
+                To become the most trusted healthcare platform, connecting millions of 
+                patients with quality healthcare providers seamlessly.
+              </p>
+            </motion.div>
+            <motion.div
+              whileHover={{ y: -5 }}
+              className="bg-green-50 rounded-xl p-6 dark:bg-gray-800"
+            >
+              <div className="text-4xl mb-4">💡</div>
+              <h3 className="text-xl font-bold mb-2 dark:text-white">Innovation</h3>
+              <p className="text-gray-600 dark:text-gray-300">
+                Leveraging cutting-edge technology to simplify healthcare access and 
+                improve patient-doctor interactions.
+              </p>
+            </motion.div>
+            <motion.div
+              whileHover={{ y: -5 }}
+              className="bg-purple-50 rounded-xl p-6 dark:bg-gray-800"
+            >
+              <div className="text-4xl mb-4">🤝</div>
+              <h3 className="text-xl font-bold mb-2 dark:text-white">Trust & Quality</h3>
+              <p className="text-gray-600 dark:text-gray-300">
+                All doctors are verified professionals. We ensure quality care and 
+                maintain the highest standards of service.
+              </p>
+            </motion.div>
           </motion.div>
           <motion.div variants={itemVariants} className="mt-16 text-center">
-            <motion.a
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              href="https://discord.gg/qsdDRKak28"
-              className="inline-flex items-center px-8 py-4 bg-blue-4 text-white-1 font-medium rounded-xl hover:bg-blue-7 transition-all duration-300 text-lg dark:bg-blue-24 dark:hover:bg-blue-31"
+            <Link
+              to="/doctor-search"
+              className="inline-flex items-center px-8 py-4 bg-blue-600 text-white font-medium rounded-xl hover:bg-blue-700 transition-all duration-300 text-lg"
             >
-              <FaDiscord className="mr-3 text-2xl" /> Become a Contributor
-            </motion.a>
+              Get Started Today
+            </Link>
           </motion.div>
         </div>
       </motion.section>
@@ -477,65 +463,71 @@ const AboutUs = () => {
       >
         <div className="max-w-5xl mx-auto">
           <motion.div variants={itemVariants} className="text-center mb-16">
-            <h2 className="text-4xl font-bold mb-4 dark:text-white-1">
-              Open Source Affiliations
+            <h2 className="text-4xl font-bold mb-4 dark:text-white">
+              Why Choose MedHealth?
             </h2>
-            <p className="text-xl text-gray-600 dark:text-yellow-1">
-              Proudly participating in top-tier developer programs
+            <p className="text-xl text-gray-600 dark:text-gray-300">
+              Experience healthcare made simple and accessible
             </p>
           </motion.div>
           <motion.div
             variants={containerVariants}
-            className="flex flex-wrap justify-center gap-8"
+            className="grid md:grid-cols-2 lg:grid-cols-4 gap-6"
           >
-            {openSourcePrograms.map((program, index) => (
-              <motion.a
-                key={program.name}
+            {[
+              {
+                title: "Easy Booking",
+                description: "Book appointments in just a few clicks with real-time availability",
+                icon: "⚡"
+              },
+              {
+                title: "Verified Doctors",
+                description: "All healthcare providers are verified and licensed professionals",
+                icon: "✅"
+              },
+              {
+                title: "Location-based",
+                description: "Find doctors near you with distance calculations and directions",
+                icon: "📍"
+              },
+              {
+                title: "24/7 Support",
+                description: "Round-the-clock customer support to assist you anytime",
+                icon: "🔄"
+              }
+            ].map((feature, index) => (
+              <motion.div
+                key={index}
                 variants={itemVariants}
                 whileHover={{
                   scale: 1.05,
+                  y: -5,
                   transition: { duration: 0.3 },
                 }}
-                href={program.link}
-                className="group flex-1 basis-[200px] max-w-[250px]"
-                target="_blank"
-                rel="noopener noreferrer"
+                className="bg-white p-6 rounded-2xl shadow-lg h-full flex flex-col items-center text-center dark:bg-gray-800"
               >
-                <div className="bg-white p-8 rounded-2xl shadow-lg h-full flex flex-col items-center">
-                  <motion.img
-                    initial={{ scale: 1 }}
-                    whileHover={{
-                      scale: 1.1,
-                      rotate: [0, 5, -5, 0],
-                      transition: { duration: 0.5 },
-                    }}
-                    src={program.logo}
-                    alt={program.name}
-                    className="w-32 h-32 object-contain mb-6"
-                  />
-                  <motion.h3
-                    initial={{ y: 0 }}
-                    whileHover={{ y: -5 }}
-                    className="text-xl font-semibold text-gray-800 text-center dark:text-yellow-1"
-                  >
-                    {program.name}
-                  </motion.h3>
-                  <motion.span
-                    initial={{ x: 0 }}
-                    whileHover={{ x: 5 }}
-                    className="mt-2 text-sm text-blue-8 flex items-center dark:text-blue-22"
-                  >
-                    Learn More
-                    <motion.span
-                      initial={{ x: 0 }}
-                      whileHover={{ x: 5 }}
-                      transition={{ duration: 0.2 }}
-                    >
-                      →
-                    </motion.span>
-                  </motion.span>
-                </div>
-              </motion.a>
+                <motion.div
+                  initial={{ scale: 1 }}
+                  whileHover={{
+                    scale: 1.2,
+                    rotate: [0, 10, -10, 0],
+                    transition: { duration: 0.5 },
+                  }}
+                  className="text-5xl mb-4"
+                >
+                  {feature.icon}
+                </motion.div>
+                <motion.h3
+                  initial={{ y: 0 }}
+                  whileHover={{ y: -5 }}
+                  className="text-xl font-semibold text-gray-800 mb-3 dark:text-white"
+                >
+                  {feature.title}
+                </motion.h3>
+                <p className="text-gray-600 text-sm dark:text-gray-300">
+                  {feature.description}
+                </p>
+              </motion.div>
             ))}
           </motion.div>
         </div>
