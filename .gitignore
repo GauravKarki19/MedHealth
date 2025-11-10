@@ -139,6 +139,18 @@ out/
 *.temp
 tempCodeRunnerFile.py
 
+# Deployment guide files (keep local, don't commit to git)
+DEPLOYMENT_*.md
+ENV_*.md
+GIT_*.md
+HOW_TO_*.md
+PRE_*.md
+QUICK_*.md
+SETUP_ENV_*.md
+START_HERE.md
+COMMIT_AND_DEPLOY.*
+remove-guide-files.ps1
+
 # parcel-bundler cache (https://parceljs.org/)
 .cache
 
